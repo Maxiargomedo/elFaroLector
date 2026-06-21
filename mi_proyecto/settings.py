@@ -35,7 +35,7 @@ ALLOWED_HOSTS = [
     host.strip()
     for host in os.environ.get(
         'DJANGO_ALLOWED_HOSTS',
-        'lectorFaro.centrolaplace.cl,localhost,127.0.0.1'
+        'lectorfaro.centrolaplace.cl,lectorFaro.centrolaplace.cl,localhost,127.0.0.1'
     ).split(',')
     if host.strip()
 ]
@@ -44,7 +44,7 @@ CSRF_TRUSTED_ORIGINS = [
     origin.strip()
     for origin in os.environ.get(
         'DJANGO_CSRF_TRUSTED_ORIGINS',
-        'https://lectorFaro.centrolaplace.cl'
+        'https://lectorfaro.centrolaplace.cl,https://lectorFaro.centrolaplace.cl'
     ).split(',')
     if origin.strip()
 ]
@@ -72,6 +72,8 @@ INSTALLED_APPS = [
 ]
 
 SECURE_SSL_REDIRECT = os.environ.get('DJANGO_SECURE_SSL_REDIRECT', '0') == '1'
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+USE_X_FORWARDED_HOST = True
 
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',

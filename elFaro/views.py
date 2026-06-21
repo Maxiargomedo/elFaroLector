@@ -445,6 +445,48 @@ def _parsear_lista_bsale(archivo, nombre_lista):
     return productos, errores
 
 
+def _importar_productos_en_lote(productos_validos, modo_importacion):
+    creados = 0
+    actualizados = 0
+
+    if modo_importacion == 'delete':
+        Producto.objects.all().delete()
+        objetos = [Producto(**datos) for datos in productos_validos]
+        Producto.objects.bulk_create(objetos, batch_size=500)
+        return len(objetos), 0
+
+    codigos = [producto['codigo_barras'] for producto in productos_validos]
+    existentes = Producto.objects.in_bulk(codigos, field_name='codigo_barras')
+
+    para_crear = []
+    para_actualizar = []
+
+    for producto_datos in productos_validos:
+        existente = existentes.get(producto_datos['codigo_barras'])
+        if existente:
+            existente.nombre = producto_datos['nombre']
+            existente.precio = producto_datos['precio']
+            existente.precio_vecino = producto_datos['precio_vecino']
+            existente.sku = producto_datos['sku']
+            para_actualizar.append(existente)
+        else:
+            para_crear.append(Producto(**producto_datos))
+
+    if para_crear:
+        Producto.objects.bulk_create(para_crear, batch_size=500)
+        creados = len(para_crear)
+
+    if para_actualizar:
+        Producto.objects.bulk_update(
+            para_actualizar,
+            ['nombre', 'precio', 'precio_vecino', 'sku'],
+            batch_size=500,
+        )
+        actualizados = len(para_actualizar)
+
+    return creados, actualizados
+
+
 def import_export_precios(request):
     if request.method == 'POST':
         accion = request.POST.get('action')
@@ -505,28 +547,7 @@ def import_export_precios(request):
 
             try:
                 with transaction.atomic():
-                    if modo_importacion == 'delete':
-                        Producto.objects.all().delete()
-                        for producto_datos in productos_validos:
-                            Producto.objects.create(**producto_datos)
-                            creados += 1
-                    else:
-                        for producto_datos in productos_validos:
-                            codigo = producto_datos['codigo_barras']
-                            defaults = {
-                                'nombre': producto_datos['nombre'],
-                                'precio': producto_datos['precio'],
-                                'precio_vecino': producto_datos['precio_vecino'],
-                                'sku': producto_datos['sku'],
-                            }
-                            _, creado = Producto.objects.update_or_create(
-                                codigo_barras=codigo,
-                                defaults=defaults,
-                            )
-                            if creado:
-                                creados += 1
-                            else:
-                                actualizados += 1
+                    creados, actualizados = _importar_productos_en_lote(productos_validos, modo_importacion)
             except Exception as exc:
                 messages.error(request, f'No se completó la importación desde Bsale: {exc}')
                 return redirect('import_export_precios')
