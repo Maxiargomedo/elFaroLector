@@ -9,7 +9,6 @@ __pycache__
 venv/
 .venv/
 db.sqlite3
-media/
 staticfiles/
 backups/
 emails_fallback/

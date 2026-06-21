@@ -967,6 +967,7 @@
     @media (max-width: 768px) {
         input, select, textarea {
             font-size: 16px !important; /* Previene zoom en iOS */
+            appearance: none;
             -webkit-appearance: none;
             border-radius: 0;
         }
@@ -1099,8 +1100,8 @@
         {% endfor %}
     </div>
     
-    <!-- FontAwesome para iconos -->
-    <script src="https://kit.fontawesome.com/2c36e9b7b1.js" crossorigin="anonymous"></script>
+    <!-- FontAwesome local/CDN para evitar bloqueo del kit -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <!-- QuaggaJS para escaneo de códigos de barras -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/quagga/0.12.1/quagga.min.js"></script>
     
