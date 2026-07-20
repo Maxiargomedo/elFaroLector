@@ -401,62 +401,168 @@ def _limpiar_texto_celda_bsale(valor):
 def _parsear_lista_bsale(archivo, nombre_lista):
     contenido = archivo.read()
     if isinstance(contenido, str):
-        html = contenido
+        text_content = contenido
     else:
-        try:
-            html = contenido.decode('utf-8-sig')
-        except UnicodeDecodeError:
-            html = contenido.decode('latin-1', errors='replace')
-
-    sopa = BeautifulSoup(html, 'html.parser')
-    tabla_datos = None
-    for tabla in sopa.find_all('table'):
-        encabezados = [
-            _limpiar_texto_celda_bsale(celda.get_text(' ', strip=True)).lower()
-            for celda in tabla.find_all('td')[:8]
-        ]
-        if any('código barras' in encabezado or 'codigo barras' in encabezado for encabezado in encabezados) and any('precio venta' in encabezado for encabezado in encabezados):
-            tabla_datos = tabla
-            break
-
-    if tabla_datos is None:
-        raise ValueError(f'No se encontró la tabla de datos en {nombre_lista}.')
+        text_content = None
+        for encoding in ['utf-8-sig', 'utf-8', 'latin-1', 'cp1252', 'utf-16']:
+            try:
+                text_content = contenido.decode(encoding)
+                break
+            except Exception:
+                text_content = None
+        if text_content is None:
+            text_content = contenido.decode('latin-1', errors='replace')
 
     productos = {}
     errores = []
-    filas = tabla_datos.find_all('tr')
-    for indice, fila in enumerate(filas, start=1):
-        celdas = fila.find_all('td')
-        if len(celdas) < 5:
-            continue
 
-        codigo = _limpiar_texto_celda_bsale(celdas[1].get_text(' ', strip=True))
-        sku = _limpiar_texto_celda_bsale(celdas[2].get_text(' ', strip=True))
-        nombre = _limpiar_texto_celda_bsale(celdas[3].get_text(' ', strip=True))
-        precio_texto = _limpiar_texto_celda_bsale(celdas[4].get_text(' ', strip=True))
+    # 1. Intentar parsear como HTML Table (Bsale exporta HTML con extension .xls)
+    sopa = BeautifulSoup(text_content, 'html.parser')
+    tablas = sopa.find_all('table')
 
-        if not codigo or codigo.lower() in {'código barras', 'codigo barras'}:
-            continue
+    tabla_datos = None
+    col_codigo = -1
+    col_sku = -1
+    col_nombre = -1
+    col_precio = -1
+    fila_encabezados_idx = -1
+    filas_tabla = []
 
-        if codigo in productos:
-            errores.append(f'Fila {indice}: código duplicado {codigo} en {nombre_lista}')
-            continue
+    for tabla in tablas:
+        filas = tabla.find_all('tr')
+        for idx_fila, fila in enumerate(filas):
+            celdas = [_limpiar_texto_celda_bsale(c.get_text(' ', strip=True)).lower() for c in fila.find_all(['td', 'th'])]
+            
+            temp_codigo = -1
+            temp_sku = -1
+            temp_nombre = -1
+            temp_precio = -1
 
-        try:
-            precio = _normalizar_precio(precio_texto)
-        except ValueError as exc:
-            errores.append(f'Fila {indice}: {exc} en {nombre_lista} ({codigo})')
-            continue
+            for idx_celda, celda_txt in enumerate(celdas):
+                if any(k in celda_txt for k in ['código barras', 'codigo barras', 'código de barras', 'codigo de barras', 'cód. barras', 'cod. barras', 'barcode']):
+                    temp_codigo = idx_celda
+                elif 'sku' in celda_txt:
+                    temp_sku = idx_celda
+                elif any(k in celda_txt for k in ['variante', 'nombre', 'descripcion', 'descripción', 'producto']):
+                    temp_nombre = idx_celda
+                elif any(k in celda_txt for k in ['precio venta', 'precio', 'p.venta', 'valor']):
+                    temp_precio = idx_celda
 
-        productos[codigo] = {
-            'codigo_barras': codigo[:30],
-            'sku': sku[:100] or None,
-            'nombre': nombre[:200],
-            'precio': precio,
-        }
+            if (temp_codigo != -1 or temp_nombre != -1 or temp_sku != -1) and temp_precio != -1:
+                tabla_datos = tabla
+                col_codigo = temp_codigo if temp_codigo != -1 else (0 if temp_sku != 1 else 1)
+                col_sku = temp_sku
+                col_nombre = temp_nombre if temp_nombre != -1 else (3 if temp_codigo == 1 else 1)
+                col_precio = temp_precio
+                fila_encabezados_idx = idx_fila
+                filas_tabla = filas
+                break
+        if tabla_datos is not None:
+            break
+
+    if tabla_datos is not None and filas_tabla:
+        for indice, fila in enumerate(filas_tabla[fila_encabezados_idx + 1:], start=fila_encabezados_idx + 2):
+            celdas = fila.find_all(['td', 'th'])
+            if not celdas:
+                continue
+
+            txt_codigo = _limpiar_texto_celda_bsale(celdas[col_codigo].get_text(' ', strip=True)) if col_codigo < len(celdas) and col_codigo != -1 else ''
+            txt_sku = _limpiar_texto_celda_bsale(celdas[col_sku].get_text(' ', strip=True)) if col_sku < len(celdas) and col_sku != -1 else ''
+            txt_nombre = _limpiar_texto_celda_bsale(celdas[col_nombre].get_text(' ', strip=True)) if col_nombre < len(celdas) and col_nombre != -1 else ''
+            txt_precio = _limpiar_texto_celda_bsale(celdas[col_precio].get_text(' ', strip=True)) if col_precio < len(celdas) and col_precio != -1 else ''
+
+            if not txt_codigo:
+                txt_codigo = txt_sku
+
+            if not txt_codigo or any(h in txt_codigo.lower() for h in ['código barras', 'codigo barras', 'código', 'codigo']):
+                continue
+
+            if txt_codigo in productos:
+                continue
+
+            try:
+                precio = _normalizar_precio(txt_precio)
+            except ValueError as exc:
+                errores.append(f'Fila {indice}: {exc} en {nombre_lista} ({txt_codigo})')
+                continue
+
+            productos[txt_codigo] = {
+                'codigo_barras': txt_codigo[:30],
+                'sku': txt_sku[:100] or None,
+                'nombre': txt_nombre[:200] or f"Producto {txt_codigo}",
+                'precio': precio,
+            }
+
+    # 2. Fallback: Parsear como CSV / TSV si no es tabla HTML
+    if not productos:
+        import io
+        import csv
+
+        for delimitador in [';', ',', '\t']:
+            try:
+                f_stream = io.StringIO(text_content)
+                reader = csv.reader(f_stream, delimiter=delimitador)
+                filas_csv = list(reader)
+
+                if len(filas_csv) < 2:
+                    continue
+
+                col_c = -1
+                col_s = -1
+                col_n = -1
+                col_p = -1
+                hdr_idx = -1
+
+                for f_idx, fila in enumerate(filas_csv[:15]):
+                    c_low = [str(c).strip().lower() for c in fila]
+                    for c_i, c_t in enumerate(c_low):
+                        if any(k in c_t for k in ['codigo barras', 'código barras', 'codigo', 'código', 'barcode']):
+                            col_c = c_i
+                        elif 'sku' in c_t:
+                            col_s = c_i
+                        elif any(k in c_t for k in ['variante', 'nombre', 'producto', 'descripcion']):
+                            col_n = c_i
+                        elif any(k in c_t for k in ['precio', 'p.venta', 'valor']):
+                            col_p = c_i
+
+                    if (col_c != -1 or col_n != -1) and col_p != -1:
+                        hdr_idx = f_idx
+                        break
+
+                if hdr_idx != -1:
+                    for indice, fila in enumerate(filas_csv[hdr_idx + 1:], start=hdr_idx + 2):
+                        if not fila:
+                            continue
+                        txt_codigo = _limpiar_texto_celda_bsale(fila[col_c]) if col_c < len(fila) and col_c != -1 else ''
+                        txt_sku = _limpiar_texto_celda_bsale(fila[col_s]) if col_s < len(fila) and col_s != -1 else ''
+                        txt_nombre = _limpiar_texto_celda_bsale(fila[col_n]) if col_n < len(fila) and col_n != -1 else ''
+                        txt_precio = _limpiar_texto_celda_bsale(fila[col_p]) if col_p < len(fila) and col_p != -1 else ''
+
+                        if not txt_codigo:
+                            txt_codigo = txt_sku
+
+                        if not txt_codigo or any(h in txt_codigo.lower() for h in ['codigo barras', 'código barras', 'codigo', 'código']):
+                            continue
+
+                        try:
+                            precio = _normalizar_precio(txt_precio)
+                        except ValueError:
+                            continue
+
+                        productos[txt_codigo] = {
+                            'codigo_barras': txt_codigo[:30],
+                            'sku': txt_sku[:100] or None,
+                            'nombre': txt_nombre[:200] or f"Producto {txt_codigo}",
+                            'precio': precio,
+                        }
+
+                if productos:
+                    break
+            except Exception:
+                continue
 
     if not productos:
-        raise ValueError(f'No se encontraron productos válidos en {nombre_lista}.')
+        raise ValueError(f'No fue posible leer las listas de Bsale: Verifique que el archivo "{nombre_lista}" exportado de Bsale contenga las columnas de Código de Barras / SKU y Precio Venta.')
 
     return productos, errores
 
