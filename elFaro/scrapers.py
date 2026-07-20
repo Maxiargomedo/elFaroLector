@@ -6,16 +6,38 @@ import urllib.parse
 # Caché en memoria de URLs de imágenes obtenidas
 _CACHE_IMAGENES = {}
 
+# Lista de dominios CDN oficiales de retail / supermercados (fotos de estudio con fondo blanco)
+RETAIL_CDN_DOMAINS = [
+    'vtexassets.com',
+    'jumbo.cl',
+    'lider.cl',
+    'cornershopapp.com',
+    'unimarc.cl',
+    'tottus.cl',
+    'walmartimages.com',
+    'santaisabel.cl',
+    'falabella.com',
+    'ripley.cl'
+]
+
+def es_imagen_retail_oficial(url):
+    """Verifica si una URL proviene de un servidor oficial de retail de estudio"""
+    if not url or not isinstance(url, str):
+        return False
+    url_lower = url.lower()
+    return any(domain in url_lower for domain in RETAIL_CDN_DOMAINS)
+
+
 def obtener_imagen_stock_producto(codigo_barras, nombre_producto=""):
     """
-    Busca automáticamente la imagen stock de supermercado (.jpg/.png limpia)
-    para un producto mediante búsqueda en Open Food Facts, Jumbo, Lider o web scraping.
+    Busca únicamente la imagen oficial de estudio (sobre fondo blanco / aislada) 
+    de supermercados e e-commerce de Chile (Jumbo, Lider, Cornershop, Unimarc, etc.)
     """
     codigo_limpio = str(codigo_barras).strip().lstrip('0')
     codigo_completo = str(codigo_barras).strip()
 
-    # Verificar si está en caché
-    if codigo_completo in _CACHE_IMAGENES:
+    # Verificar caché en memoria
+    if codigo_completo in _CACHE_IMAGENES and _CACHE_IMAGENES[codigo_completo]:
         return _CACHE_IMAGENES[codigo_completo]
 
     headers = {
@@ -24,9 +46,71 @@ def obtener_imagen_stock_producto(codigo_barras, nombre_producto=""):
         'Accept-Language': 'es-CL,es;q=0.9,en-US;q=0.8,en;q=0.7'
     }
 
-    imagen_url = None
+    # --- PRIORITY 1: API Directa de Jumbo.cl (Fotos de estudio VTEX 100% aisladas) ---
+    for cod in [codigo_completo, codigo_limpio]:
+        if len(cod) >= 7:
+            try:
+                url_jumbo = f"https://www.jumbo.cl/api/catalog_system/pub/products/search?fq=alternateIds_EAN:{cod}"
+                resp = requests.get(url_jumbo, headers=headers, timeout=3.5)
+                if resp.status_code == 200:
+                    items = resp.json()
+                    if items and isinstance(items, list) and len(items) > 0:
+                        item = items[0]
+                        if 'items' in item and len(item['items']) > 0:
+                            images = item['items'][0].get('images', [])
+                            if images and len(images) > 0:
+                                img_url = images[0].get('imageUrl')
+                                if img_url and es_imagen_retail_oficial(img_url):
+                                    print(f"🛍️ [RETAIL STOCK] Imagen studio Jumbo obtenida: {img_url}")
+                                    _CACHE_IMAGENES[codigo_completo] = img_url
+                                    return img_url
+            except Exception as e:
+                print(f"Error Jumbo API: {e}")
 
-    # --- FUENTE 1: Open Food Facts API (EAN / UPC internacional y Chile) ---
+    # --- PRIORITY 2: API de Búsqueda por EAN en Lider.cl (Walmart Chile) ---
+    for cod in [codigo_completo, codigo_limpio]:
+        if len(cod) >= 7:
+            try:
+                url_lider = f"https://www.lider.cl/bff/products/search?query={cod}"
+                resp = requests.get(url_lider, headers=headers, timeout=3.5)
+                if resp.status_code == 200:
+                    data = resp.json()
+                    products = data.get('products', []) or data.get('items', [])
+                    if products:
+                        prod = products[0]
+                        img_url = prod.get('image') or prod.get('imageUrl') or prod.get('thumbnail')
+                        if img_url and es_imagen_retail_oficial(img_url):
+                            print(f"🛍️ [RETAIL STOCK] Imagen studio Lider obtenida: {img_url}")
+                            _CACHE_IMAGENES[codigo_completo] = img_url
+                            return img_url
+            except Exception as e:
+                print(f"Error Lider API: {e}")
+
+    # --- PRIORITY 3: Búsqueda Web filtrada EXCLUSIVAMENTE por CDNs de Supermercados ---
+    query_terms = []
+    if nombre_producto:
+        query_terms.append(f"{nombre_producto}")
+    query_terms.append(f"{codigo_completo}")
+
+    for q_text in query_terms:
+        try:
+            query = f"{q_text} site:jumbo.cl OR site:lider.cl OR site:cornershopapp.com OR site:unimarc.cl"
+            url_ddg = f"https://html.duckduckgo.com/html/?q={urllib.parse.quote(query)}"
+            resp = requests.get(url_ddg, headers=headers, timeout=3.5)
+            if resp.status_code == 200:
+                soup = BeautifulSoup(resp.text, 'html.parser')
+                for img in soup.find_all('img'):
+                    src = img.get('src') or ''
+                    if src.startswith('//'):
+                        src = 'https:' + src
+                    if es_imagen_retail_oficial(src):
+                        print(f"🛍️ [RETAIL STOCK] Imagen studio filtrada web: {src}")
+                        _CACHE_IMAGENES[codigo_completo] = src
+                        return src
+        except Exception as e:
+            print(f"Error Retail Web Search: {e}")
+
+    # --- PRIORITY 4: Open Food Facts (Filtro secundario si viene de servidor de imágenes de producto) ---
     for cod in [codigo_completo, codigo_limpio]:
         if len(cod) >= 8:
             try:
@@ -36,57 +120,14 @@ def obtener_imagen_stock_producto(codigo_barras, nombre_producto=""):
                     data = resp.json()
                     if data.get('status') == 1 and 'product' in data:
                         prod = data['product']
-                        imagen_url = (prod.get('image_front_url') or 
-                                      prod.get('image_url') or 
-                                      prod.get('image_front_small_url'))
-                        if imagen_url:
-                            print(f"📷 [SCRAPER SUCCESS] Encontrada en OpenFoodFacts: {imagen_url}")
-                            _CACHE_IMAGENES[codigo_completo] = imagen_url
-                            return imagen_url
+                        img_url = (prod.get('image_front_url') or 
+                                   prod.get('image_url'))
+                        if img_url and 'openfoodfacts' in img_url:
+                            print(f"🛍️ [RETAIL STOCK] Imagen OpenFoodFacts: {img_url}")
+                            _CACHE_IMAGENES[codigo_completo] = img_url
+                            return img_url
             except Exception as e:
                 print(f"Error OpenFoodFacts: {e}")
 
-    # --- FUENTE 2: API de Catálogo Jumbo.cl ---
-    for cod in [codigo_completo, codigo_limpio]:
-        if len(cod) >= 8:
-            try:
-                url_jumbo = f"https://www.jumbo.cl/api/catalog_system/pub/products/search?fq=alternateIds_EAN:{cod}"
-                resp = requests.get(url_jumbo, headers=headers, timeout=3.0)
-                if resp.status_code == 200:
-                    items = resp.json()
-                    if items and isinstance(items, list) and len(items) > 0:
-                        item = items[0]
-                        if 'items' in item and len(item['items']) > 0:
-                            images = item['items'][0].get('images', [])
-                            if images and len(images) > 0:
-                                imagen_url = images[0].get('imageUrl')
-                                if imagen_url:
-                                    print(f"📷 [SCRAPER SUCCESS] Encontrada en Jumbo API: {imagen_url}")
-                                    _CACHE_IMAGENES[codigo_completo] = imagen_url
-                                    return imagen_url
-            except Exception as e:
-                print(f"Error Jumbo API: {e}")
-
-    # --- FUENTE 3: Búsqueda por Nombre / Código en E-commerce de Chile (Lider / Jumbo / Cornershop) ---
-    if nombre_producto:
-        try:
-            query = f"{nombre_producto} supermercado chile"
-            url_ddg = f"https://html.duckduckgo.com/html/?q={urllib.parse.quote(query)}"
-            resp = requests.get(url_ddg, headers=headers, timeout=3.0)
-            if resp.status_code == 200:
-                soup = BeautifulSoup(resp.text, 'html.parser')
-                for img in soup.find_all('img'):
-                    src = img.get('src') or ''
-                    if src.startswith('//'):
-                        src = 'https:' + src
-                    if 'http' in src and any(domain in src for domain in ['jumbo.cl', 'lider.cl', 'cornershop', 'unimarc.cl', 'wikimedia', 'bing']):
-                        print(f"📷 [SCRAPER SUCCESS] Encontrada en Web Search: {src}")
-                        _CACHE_IMAGENES[codigo_completo] = src
-                        return src
-        except Exception as e:
-            print(f"Error DuckDuckGo Search: {e}")
-
-    # Si no se encuentra imagen stock, retornar una imagen placeholder limpia de producto
-    imagen_fallback = "https://images.unsplash.com/photo-1542838132-92c53300491e?w=500&auto=format&fit=crop&q=80"
     _CACHE_IMAGENES[codigo_completo] = None
     return None
