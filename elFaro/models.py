@@ -28,6 +28,7 @@ class Producto(models.Model):
     codigo_barras = models.CharField(max_length=30, unique=True)  # Debe ser CharField
     precio = models.DecimalField(max_digits=7, decimal_places=0, validators=[validate_price_value])
     precio_vecino = models.DecimalField(max_digits=7, decimal_places=0, blank=True, null=True, validators=[validate_price_value])
+    imagen_url = models.CharField(max_length=500, blank=True, null=True)
     
     def clean(self):
         """Validación adicional a nivel de modelo"""

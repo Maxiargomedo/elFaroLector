@@ -122,6 +122,33 @@
             pointer-events: auto;
         }
 
+        /* Contenedor e imagen de producto stock (Supermercado / E-commerce) */
+        .producto-imagen-container {
+            width: 100%;
+            max-height: 220px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 8px 0 14px 0;
+            padding: 8px;
+            background: #ffffff;
+            border-radius: 16px;
+            box-shadow: inset 0 0 0 1px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.08);
+            overflow: hidden;
+        }
+
+        .producto-imagen-stock {
+            max-width: 100%;
+            max-height: 200px;
+            object-fit: contain;
+            border-radius: 10px;
+            transition: transform 0.3s ease;
+        }
+
+        .producto-imagen-stock:hover {
+            transform: scale(1.04);
+        }
+
         /* Botón 'X' para cerrar la barra lateral */
         .sidebar-close-btn {
             position: absolute;
@@ -1751,10 +1778,20 @@
         }
 
         function mostrarProducto(data, codigoBuscado) {
+            let htmlImagen = '';
+            if (data.imagen_url && data.imagen_url.trim() !== '') {
+                htmlImagen = `
+                    <div class="producto-imagen-container">
+                        <img src="${data.imagen_url}" alt="${data.nombre}" class="producto-imagen-stock" onerror="this.parentElement.style.display='none';">
+                    </div>
+                `;
+            }
+
             cartaContenido.innerHTML = `
                 <span class="codigo-barras" id="codigoBarras">${data.codigo_barras || codigoBuscado}</span>
                 <span class="sku" id="sku">${data.sku ? 'SKU: ' + data.sku : ''}</span>
                 <h2 id="productoNombre" class="producto-nombre">${data.nombre}</h2>
+                ${htmlImagen}
                 <div class="precio-normal-container">
                     <span class="precio-normal-label">PRECIO NORMAL</span>
                     <span class="producto-precio" id="productoPrecio">${formatoChileno(data.precio)}</span>

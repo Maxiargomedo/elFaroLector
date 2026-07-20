@@ -21,6 +21,7 @@ from datetime import datetime
 from urllib.parse import quote
 from urllib.parse import urlparse
 from django.views.decorators.csrf import csrf_exempt
+from .scrapers import obtener_imagen_stock_producto
 
 
 def limpiar_codigo_barras(codigo):
@@ -169,13 +170,29 @@ def buscar_producto(request):
         
         if producto:
             print(f"✅ Producto encontrado: {producto.nombre} con código {producto.codigo_barras}")
+            
+            # Obtener / Escrapear imagen stock del producto (Jumbo, Lider, OpenFoodFacts, etc.)
+            imagen_url = getattr(producto, 'imagen_url', None)
+            if not imagen_url:
+                try:
+                    imagen_url = obtener_imagen_stock_producto(producto.codigo_barras, producto.nombre)
+                    if imagen_url and hasattr(producto, 'imagen_url') and hasattr(producto, 'save'):
+                        try:
+                            producto.imagen_url = imagen_url
+                            producto.save(update_fields=['imagen_url'])
+                        except Exception as e_save:
+                            print(f"Nota guardar imagen_url: {e_save}")
+                except Exception as e_img:
+                    print(f"Error extrayendo imagen stock: {e_img}")
+
             return JsonResponse({
                 'nombre': producto.nombre,
                 'precio': str(producto.precio),
                 'sku': producto.sku or '',
                 'codigo_barras': producto.codigo_barras,
                 'codigo_original': codigo_original,
-                'precio_vecino': str(producto.precio_vecino) if producto.precio_vecino else None
+                'precio_vecino': str(producto.precio_vecino) if producto.precio_vecino else None,
+                'imagen_url': imagen_url or ''
             })
         
         # Si llegamos aquí, no se encontró el producto
