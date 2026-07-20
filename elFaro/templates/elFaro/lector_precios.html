@@ -574,41 +574,138 @@
         .carrusel-indicador.active {
             background: #43a047;
         }
-        .barra-roja {
+        /* --- BARRA INFERIOR DE ESCANEO DINÁMICO --- */
+        .barra-roja, .barra-scan-laser {
             width: 100vw;
             max-width: 2400px;
-            background: #000000;
-            color: #fff;
+            background: linear-gradient(180deg, #090d16 0%, #05070a 100%);
+            border-top: 2px solid rgba(67, 160, 71, 0.4);
+            position: relative;
+            padding: 1.8vh 0 1.6vh 0;
+            min-height: 120px;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            border-radius: 0;
-            box-shadow: 0 -2px 16px rgba(0,0,0,0.08);
-            padding: 1.5vh 0 1.5vh 0;
-            min-height: 110px;
+            overflow: hidden;
+            box-shadow: 0 -10px 30px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.1);
             margin-top: 15px;
             flex: 0 0 auto;
         }
-        .scan-here {
-            font-size: 2.2vw;
+
+        /* Haz de Luz Láser barriendo horizontalmente */
+        .laser-sweep-beam {
+            position: absolute;
+            top: 0;
+            left: -30%;
+            width: 30%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent 0%, #43a047 50%, #ffffff 75%, transparent 100%);
+            box-shadow: 0 0 15px #43a047, 0 0 30px #43a047;
+            animation: laserSweep 3s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+        }
+
+        @keyframes laserSweep {
+            0% { left: -30%; opacity: 0; }
+            15% { opacity: 1; }
+            85% { opacity: 1; }
+            100% { left: 100%; opacity: 0; }
+        }
+
+        .scan-dynamic-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            z-index: 2;
+        }
+
+        /* Badge con LED de estado */
+        .scan-status-badge {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(67, 160, 71, 0.12);
+            border: 1px solid rgba(67, 160, 71, 0.3);
+            padding: 3px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 800;
+            color: #43a047;
+            letter-spacing: 1.5px;
+            margin-bottom: 2px;
+        }
+
+        .pulse-led-green {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #43a047;
+            box-shadow: 0 0 10px #43a047;
+            animation: ledPulse 1.4s ease-in-out infinite;
+        }
+
+        @keyframes ledPulse {
+            0%, 100% { opacity: 0.3; transform: scale(0.9); }
+            50% { opacity: 1; transform: scale(1.3); }
+        }
+
+        /* Título con Texto en Gradiente Brillante */
+        .scan-title-glow {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .scan-barcode-icon {
+            width: 28px;
+            height: 28px;
+            color: #ffffff;
+            flex-shrink: 0;
+            filter: drop-shadow(0 0 6px rgba(67, 160, 71, 0.5));
+        }
+
+        .scan-text-gradient {
+            font-size: 2.2rem;
             font-weight: 900;
             letter-spacing: 2px;
-            margin-bottom: 0.5vh;
-            text-align: center;
+            background: linear-gradient(90deg, #ffffff 0%, #81c784 40%, #ffffff 70%, #43a047 100%);
+            background-size: 200% auto;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: textShimmer 4s linear infinite;
+            text-transform: uppercase;
         }
-        .flechas {
-            font-size: 2vw;
-            font-weight: bold;
-            margin-bottom: 1vh;
-            margin-top: 0.2vh;
-            text-align: center;
-            animation: flotar 1.5s ease-in-out infinite;
+
+        @keyframes textShimmer {
+            0% { background-position: 0% center; }
+            100% { background-position: 200% center; }
         }
-        @keyframes flotar {
-            0% { transform: translateY(0); }
-            50% { transform: translateY(-5px); }
-            100% { transform: translateY(0); }
+
+        /* Cascada dinámica de flechas vectoriales */
+        .flechas-cascada {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-top: 2px;
+        }
+
+        .arrow-down-svg {
+            width: 22px;
+            height: 22px;
+            color: #43a047;
+            filter: drop-shadow(0 2px 8px rgba(67, 160, 71, 0.6));
+        }
+
+        .arrow-down-svg.wave1 { animation: arrowWave 1.4s infinite ease-in-out; animation-delay: 0s; }
+        .arrow-down-svg.wave2 { animation: arrowWave 1.4s infinite ease-in-out; animation-delay: 0.2s; }
+        .arrow-down-svg.wave3 { animation: arrowWave 1.4s infinite ease-in-out; animation-delay: 0.4s; }
+
+        @keyframes arrowWave {
+            0% { opacity: 0.2; transform: translateY(-4px) scale(0.9); }
+            50% { opacity: 1; transform: translateY(4px) scale(1.15); color: #ffffff; }
+            100% { opacity: 0.2; transform: translateY(-4px) scale(0.9); }
         }
         .input-barcode {
             max-width: 340px;
@@ -1426,12 +1523,45 @@
                     <span>Precio Vecino es el programa de fidelización de clientes frecuentes de El Faro de Algarrobo. A través de esta iniciativa, quienes realicen compras de forma habitual en nuestro Minimarket podrán acceder a precios especiales.</span>
                 </div>
             </div>
-            <!-- Barra roja inferior -->
-            <div class="barra-roja">
-                <div class="scan-here">ESCANEA AQUÍ</div>
-                <div class="flechas">&#x25BC;&#x25BC;&#x25BC;</div>
-                <input type="text" id="codigo_barras" class="input input-barcode" 
-                    autofocus maxlength="25">
+            <!-- Barra Inferior Dinámica de Escaneo Laser -->
+            <div class="barra-scan-laser">
+                <!-- Luz de scanner láser horizontal que barre de izquierda a derecha -->
+                <div class="laser-sweep-beam"></div>
+
+                <div class="scan-dynamic-container">
+                    <!-- Status Badge con luz LED parpadeante -->
+                    <div class="scan-status-badge">
+                        <span class="pulse-led-green"></span>
+                        <span>ESCÁNER OPTICO ACTIVO</span>
+                    </div>
+
+                    <!-- Título Shimmering "ESCANEA AQUÍ TU PRODUCTO" -->
+                    <div class="scan-title-glow">
+                        <svg class="scan-barcode-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2" stroke-linecap="round"/>
+                            <line x1="7" y1="12" x2="17" y2="12" stroke="#43a047" stroke-width="2.5"/>
+                            <line x1="8" y1="8" x2="8" y2="16"/>
+                            <line x1="12" y1="8" x2="12" y2="16"/>
+                            <line x1="16" y1="8" x2="16" y2="16"/>
+                        </svg>
+                        <span class="scan-text-gradient">ESCANEA AQUÍ TU PRODUCTO</span>
+                    </div>
+
+                    <!-- Cascada dinámica de flechas vectoriales pulsadoreas -->
+                    <div class="flechas-cascada">
+                        <svg class="arrow-down-svg wave1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="6 9 12 15 18 9"></polyline>
+                        </svg>
+                        <svg class="arrow-down-svg wave2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="6 9 12 15 18 9"></polyline>
+                        </svg>
+                        <svg class="arrow-down-svg wave3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="6 9 12 15 18 9"></polyline>
+                        </svg>
+                    </div>
+                </div>
+
+                <input type="text" id="codigo_barras" class="input input-barcode" autofocus maxlength="25">
                 <button id="btnCamara" class="button is-success btn-camara">
                     <span class="icon"><i class="fas fa-camera"></i></span>
                     <span>Usar cámara</span>
