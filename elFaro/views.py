@@ -167,24 +167,31 @@ def buscar_producto(request):
         if producto:
             print(f"✅ Producto encontrado: {producto.nombre} con código {producto.codigo_barras}")
             
-            # Obtener / Escrapear imagen stock del producto (Jumbo, Lider, Walmart, etc.)
-            imagen_url = getattr(producto, 'imagen_url', None)
+            # 1. Verificar si existe imagen alojada localmente en media/productos/{codigo}.jpg
+            import os
+            local_rel_path = f"productos/{producto.codigo_barras}.jpg"
+            local_full_path = os.path.join(settings.MEDIA_ROOT, 'productos', f"{producto.codigo_barras}.jpg")
             
-            # Si no hay imagen guardada O si la imagen guardada NO proviene de un CDN oficial de retail, re-escrapear
-            if not imagen_url or not es_link_supermercado_oficial(imagen_url):
-                try:
-                    nueva_imagen = obtener_imagen_stock_producto(producto.codigo_barras, producto.nombre)
-                    if nueva_imagen:
-                        imagen_url = nueva_imagen
-                        if hasattr(producto, 'imagen_url') and hasattr(producto, 'save'):
-                            try:
-                                producto.imagen_url = nueva_imagen
-                                producto.save(update_fields=['imagen_url'])
-                                print(f"✅ Reemplazada foto casera por imagen oficial de retail: {nueva_imagen}")
-                            except Exception as e_save:
-                                print(f"Nota guardar imagen_url: {e_save}")
-                except Exception as e_img:
-                    print(f"Error extrayendo imagen stock: {e_img}")
+            imagen_url = None
+            if os.path.exists(local_full_path):
+                imagen_url = settings.MEDIA_URL + local_rel_path
+                print(f"📁 Usando foto alojada en servidor local: {imagen_url}")
+            else:
+                imagen_url = getattr(producto, 'imagen_url', None)
+                if not imagen_url or not es_link_supermercado_oficial(imagen_url):
+                    try:
+                        nueva_imagen = obtener_imagen_stock_producto(producto.codigo_barras, producto.nombre)
+                        if nueva_imagen:
+                            imagen_url = nueva_imagen
+                            if hasattr(producto, 'imagen_url') and hasattr(producto, 'save'):
+                                try:
+                                    producto.imagen_url = nueva_imagen
+                                    producto.save(update_fields=['imagen_url'])
+                                    print(f"✅ Guardada imagen de retail: {nueva_imagen}")
+                                except Exception as e_save:
+                                    print(f"Nota guardar imagen_url: {e_save}")
+                    except Exception as e_img:
+                        print(f"Error extrayendo imagen stock: {e_img}")
 
             return JsonResponse({
                 'nombre': producto.nombre,

@@ -1,0 +1,244 @@
+import os
+import csv
+import re
+import time
+import requests
+import urllib.parse
+from bs4 import BeautifulSoup
+
+# --- CONFIGURACIÓN ---
+CSV_FILENAME = 'Lista_de_Precios_Base.csv'
+OUTPUT_DIR = os.path.join(os.path.dirname(__file__), 'imagenes_productos')
+REPORT_FILE = os.path.join(os.path.dirname(__file__), 'reporte_descargas.json')
+
+# Lista de dominios CDN oficiales de retail / supermercados (fotos de estudio con fondo blanco)
+RETAIL_CDN_DOMAINS = [
+    'jumbocl.vtexassets.com',
+    'jumbo.vtexassets.com',
+    'i5.walmartimages.cl',
+    'walmartimages.cl',
+    'walmartimages.com',
+    'vtexassets.com',
+    'images.lider.cl',
+    'cornershopapp.com',
+    'unimarc.vtexassets.com',
+    'santaisabel.vtexassets.com',
+    'tottus.vtexassets.com'
+]
+
+HEADERS = {
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
+    'Accept': 'application/json, text/plain, */*',
+    'Accept-Language': 'es-CL,es;q=0.9,en-US;q=0.8,en;q=0.7'
+}
+
+def es_link_supermercado_oficial(url):
+    """Verifica si la URL proviene de un CDN de estudio oficial de supermercado"""
+    if not url or not isinstance(url, str):
+        return False
+    url_lower = url.lower()
+    return any(domain in url_lower for domain in RETAIL_CDN_DOMAINS)
+
+def limpiar_nombre_para_busqueda(nombre):
+    """Limpia el nombre del producto para búsquedas en e-commerce"""
+    if not nombre:
+        return ""
+    # Quitar unidades redundantes, paréntesis y guiones
+    nombre_clean = re.sub(r'[\(\)\[\]\{\}\*\_]+', ' ', nombre)
+    palabras = nombre_clean.split()
+    return ' '.join(palabras[:5])
+
+def buscar_url_imagen_retail(codigo_barras, nombre_producto):
+    """
+    Busca la foto stock oficial de estudio (.jpg/.png sobre fondo blanco) 
+    para un código de barras y nombre de producto.
+    """
+    codigo_limpio = str(codigo_barras).strip().lstrip('0')
+    codigo_completo = str(codigo_barras).strip()
+    nombre_query = limpiar_nombre_para_busqueda(nombre_producto)
+
+    # 1. Jumbo VTEX API por EAN
+    for cod in [codigo_completo, codigo_limpio]:
+        if len(cod) >= 7:
+            try:
+                url_jumbo = f"https://www.jumbo.cl/api/catalog_system/pub/products/search?fq=alternateIds_EAN:{cod}"
+                resp = requests.get(url_jumbo, headers=HEADERS, timeout=3.5)
+                if resp.status_code == 200:
+                    items = resp.json()
+                    if items and isinstance(items, list) and len(items) > 0:
+                        for item in items:
+                            if 'items' in item and len(item['items']) > 0:
+                                images = item['items'][0].get('images', [])
+                                for img_obj in images:
+                                    img_url = img_obj.get('imageUrl')
+                                    if es_link_supermercado_oficial(img_url):
+                                        return img_url, 'Jumbo VTEX (EAN)'
+            except Exception:
+                pass
+
+    # 2. Lider Walmart API por EAN
+    for cod in [codigo_completo, codigo_limpio]:
+        if len(cod) >= 7:
+            try:
+                url_lider = f"https://www.lider.cl/bff/products/search?query={cod}"
+                resp = requests.get(url_lider, headers=HEADERS, timeout=3.5)
+                if resp.status_code == 200:
+                    data = resp.json()
+                    products = data.get('products', []) or data.get('items', [])
+                    if products:
+                        for prod in products:
+                            img_url = prod.get('image') or prod.get('imageUrl') or prod.get('thumbnail')
+                            if es_link_supermercado_oficial(img_url):
+                                return img_url, 'Lider Walmart (EAN)'
+            except Exception:
+                pass
+
+    # 3. Jumbo VTEX API por Nombre
+    if nombre_query:
+        try:
+            url_jumbo_ft = f"https://www.jumbo.cl/api/catalog_system/pub/products/search?ft={urllib.parse.quote(nombre_query)}"
+            resp = requests.get(url_jumbo_ft, headers=HEADERS, timeout=3.5)
+            if resp.status_code == 200:
+                items = resp.json()
+                if items and isinstance(items, list) and len(items) > 0:
+                    for item in items:
+                        if 'items' in item and len(item['items']) > 0:
+                            images = item['items'][0].get('images', [])
+                            for img_obj in images:
+                                img_url = img_obj.get('imageUrl')
+                                if es_link_supermercado_oficial(img_url):
+                                    return img_url, 'Jumbo VTEX (Nombre)'
+        except Exception:
+            pass
+
+    # 4. Lider Walmart API por Nombre
+    if nombre_query:
+        try:
+            url_lider_ft = f"https://www.lider.cl/bff/products/search?query={urllib.parse.quote(nombre_query)}"
+            resp = requests.get(url_lider_ft, headers=HEADERS, timeout=3.5)
+            if resp.status_code == 200:
+                data = resp.json()
+                products = data.get('products', []) or data.get('items', [])
+                if products:
+                    for prod in products:
+                        img_url = prod.get('image') or prod.get('imageUrl') or prod.get('thumbnail')
+                        if es_link_supermercado_oficial(img_url):
+                            return img_url, 'Lider Walmart (Nombre)'
+        except Exception:
+            pass
+
+    # 5. Búsqueda Web filtrando dominios jumbocl.vtexassets.com / i5.walmartimages.cl
+    if nombre_query:
+        try:
+            b_query = f"{nombre_query} {codigo_completo} jumbocl.vtexassets.com OR i5.walmartimages.cl"
+            url_search = f"https://html.duckduckgo.com/html/?q={urllib.parse.quote(b_query)}"
+            resp = requests.get(url_search, headers=HEADERS, timeout=3.5)
+            if resp.status_code == 200:
+                soup = BeautifulSoup(resp.text, 'html.parser')
+                for a in soup.find_all('a'):
+                    href = a.get('href') or ''
+                    if 'uddg=' in href:
+                        href = urllib.parse.unquote(href.split('uddg=')[-1].split('&')[0])
+                    if es_link_supermercado_oficial(href):
+                        return href, 'Web CDN Match'
+
+                for img in soup.find_all('img'):
+                    src = img.get('src') or ''
+                    if src.startswith('//'):
+                        src = 'https:' + src
+                    if es_link_supermercado_oficial(src):
+                        return src, 'Web CDN Image Match'
+        except Exception:
+            pass
+
+    return None, None
+
+def descargar_imagen(url, ruta_salida):
+    """Descarga el contenido de la imagen en disco"""
+    try:
+        r = requests.get(url, headers=HEADERS, timeout=10)
+        if r.status_code == 200 and len(r.content) > 1000:
+            with open(ruta_salida, 'wb') as f:
+                f.write(r.content)
+            return True
+    except Exception as e:
+        print(f"Error descargando {url}: {e}")
+    return False
+
+def main():
+    if not os.path.exists(OUTPUT_DIR):
+        os.makedirs(OUTPUT_DIR)
+
+    csv_path = os.path.join(os.path.dirname(__file__), CSV_FILENAME)
+    if not os.path.exists(csv_path):
+        print(f"❌ No se encontró el archivo CSV en: {csv_path}")
+        return
+
+    print("==========================================================")
+    print("🚀 INICIANDO DESCARGADOR AUTOMÁTICO DE IMÁGENES STOCK")
+    print(f"📂 Carpeta destino: {OUTPUT_DIR}")
+    print("==========================================================")
+
+    productos = []
+    with open(csv_path, mode='r', encoding='utf-8-sig', errors='replace') as f:
+        reader = csv.reader(f)
+        encabezado_encontrado = False
+        for row in reader:
+            if not row or len(row) < 3:
+                continue
+            if 'Código Barras' in row or 'Codigo Barras' in row or 'Código' in row:
+                encabezado_encontrado = True
+                continue
+            if encabezado_encontrado:
+                # Columna 1: Código Barras, Columna 2: SKU, Columna 3: Nombre/Variante
+                cod = row[1].strip() if len(row) > 1 else ''
+                nombre = row[3].strip() if len(row) > 3 else (row[2].strip() if len(row) > 2 else '')
+                if cod and re.match(r'^\d+$', cod):
+                    productos.append({'codigo': cod, 'nombre': nombre})
+
+    total = len(productos)
+    print(f"📊 Total de productos cargados desde el CSV: {total}\n")
+
+    exitosos = 0
+    ya_existian = 0
+    fallidos = 0
+
+    for idx, prod in enumerate(productos, 1):
+        cod = prod['codigo']
+        nombre = prod['nombre']
+        filename = f"{cod}.jpg"
+        filepath = os.path.join(OUTPUT_DIR, filename)
+
+        # Si la imagen ya fue descargada previamente, omitir
+        if os.path.exists(filepath) and os.path.getsize(filepath) > 1000:
+            ya_existian += 1
+            print(f"[{idx}/{total}] ⏩ {cod}.jpg ya existe. Omitiendo...")
+            continue
+
+        print(f"[{idx}/{total}] 🔍 Buscando foto stock para: '{nombre}' ({cod})...")
+        url_img, fuente = buscar_url_imagen_retail(cod, nombre)
+
+        if url_img:
+            if descargar_imagen(url_img, filepath):
+                exitosos += 1
+                print(f"   ✅ ¡Descargada exitosamente ({fuente})! -> {filename}")
+            else:
+                fallidos += 1
+                print(f"   ❌ Falló la descarga de URL: {url_img}")
+        else:
+            fallidos += 1
+            print(f"   ⚠️ No se encontró foto de estudio con fondo blanco para {cod}")
+
+        # Pausa para evitar rate limits
+        time.sleep(0.3)
+
+    print("\n==========================================================")
+    print("🎉 DESCARGA FINALIZADA")
+    print(f"✅ Descargadas nuevas: {exitosos}")
+    print(f"⏩ Ya existían: {ya_existian}")
+    print(f"⚠️ Sin imagen encontrada: {fallidos}")
+    print(f"📂 Carpeta de imágenes listas: {OUTPUT_DIR}")
+    print("==========================================================")
+
+if __name__ == '__main__':
+    main()
