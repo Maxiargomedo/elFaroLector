@@ -1616,70 +1616,10 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/quagga/0.12.1/quagga.min.js"></script>
     
     <script>
-        // Sistema de monitoreo de conexión
-        const estadoConexion = document.getElementById('estadoConexion');
-        let servidorDisponible = true;
-        let intentosReconexion = 0;
-        const maxIntentosAntesDeRecargar = 5;
-
-        function verificarConexion() {
-            const url = '/ping?' + new Date().getTime();
-            
-            fetch(url, { 
-                method: 'HEAD',
-                cache: 'no-store',
-                timeout: 3000
-            })
-            .then(response => {
-                if (response.ok) {
-                    if (!servidorDisponible) {
-                        console.log('Conexión restablecida');
-                        servidorDisponible = true;
-                        estadoConexion.textContent = 'Conexión restablecida';
-                        estadoConexion.className = 'estado-conexion online';
-                        
-                        setTimeout(() => {
-                            estadoConexion.style.opacity = '0';
-                        }, 3000);
-                        
-                        setTimeout(() => {
-                            location.reload();
-                        }, 1500);
-                    } else {
-                        estadoConexion.className = 'estado-conexion online';
-                    }
-                    intentosReconexion = 0;
-                } else {
-                    manejarErrorConexion();
-                }
-            })
-            .catch(error => {
-                manejarErrorConexion();
-            });
-        }
-        
-        function manejarErrorConexion() {
-            servidorDisponible = false;
-            intentosReconexion++;
-            
-            if (intentosReconexion >= maxIntentosAntesDeRecargar) {
-                estadoConexion.textContent = 'Reconectando...';
-                estadoConexion.className = 'estado-conexion reconectando';
-                console.log('Intentando reconexión completa...');
-                setTimeout(() => {
-                    location.reload();
-                }, 2000);
-                intentosReconexion = 0;
-            } else {
-                estadoConexion.textContent = 'Sin conexión al servidor';
-                estadoConexion.className = 'estado-conexion offline';
-                console.log('Conexión perdida. Intento ' + intentosReconexion);
-            }
-        }
-        
+        // Elemento global de estado de conexión
+        let estadoConexion = null;
         document.addEventListener('DOMContentLoaded', function() {
-            setTimeout(verificarConexion, 5000);
-            setInterval(verificarConexion, 60000);
+            estadoConexion = document.getElementById('estadoConexion');
         });
 
         // --- SISTEMA DE GESTOS EN TIEMPO REAL (REAL-TIME DRAG SIDEBAR) ---
@@ -1811,9 +1751,10 @@
         }
 
         // --- VERIFICACIÓN DE CONEXIÓN CON LA BASE DE DATOS ---
-        const estadoConexion = document.getElementById('estadoConexion');
-
         function verificarConexionBaseDatos() {
+            if (!estadoConexion) {
+                estadoConexion = document.getElementById('estadoConexion');
+            }
             fetch('/verificar_conexion/?t=' + Date.now())
                 .then(resp => {
                     if (resp.ok) return resp.json();
