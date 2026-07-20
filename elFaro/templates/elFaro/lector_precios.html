@@ -99,6 +99,17 @@
             50% { opacity: 1; stroke: #ffffff; }
         }
 
+        /* Desactivar arrastre nativo de imágenes en PC */
+        img, .carrusel-img, .carrusel-container img {
+            -webkit-user-drag: none;
+            -khtml-user-drag: none;
+            -moz-user-drag: none;
+            -o-user-drag: none;
+            user-drag: none;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
         /* Zona de gestos 100% INVISIBLE en el borde izquierdo para los trabajadores */
         .sidebar-swipe-handle {
             position: fixed;
@@ -1215,102 +1226,173 @@
             setInterval(verificarConexion, 60000);
         });
 
-        // --- FUNCIONALIDAD DE DESLIZAMIENTO (SWIPE) PARA SIDEBAR ---
+        // --- SISTEMA DE GESTOS EN TIEMPO REAL (REAL-TIME DRAG SIDEBAR) ---
         const sidebar = document.getElementById('sidebar');
         const contenidoPrincipal = document.getElementById('contenidoPrincipal');
         const swipeHandle = document.getElementById('swipeHandle');
         let sidebarOpen = false;
+        let isDragging = false;
+        let startX = 0;
+        let startY = 0;
+        let currentX = 0;
+        let currentY = 0;
+        let isHorizontalDrag = false;
+
+        function getSidebarWidth() {
+            return sidebar ? sidebar.offsetWidth || 250 : 250;
+        }
+
+        // Evitar arrastrar imágenes por defecto en el navegador (PC)
+        document.addEventListener('dragstart', function(e) {
+            e.preventDefault();
+        }, false);
 
         function openSidebar() {
             sidebarOpen = true;
+            sidebar.style.transition = 'transform 0.35s cubic-bezier(0.16, 1, 0.3, 1)';
+            sidebar.style.transform = 'translateX(0)';
             sidebar.classList.add('open');
-            contenidoPrincipal.classList.add('shifted');
+            if (contenidoPrincipal) contenidoPrincipal.classList.add('shifted');
             document.body.classList.add('shifted');
-            if (swipeHandle) swipeHandle.style.opacity = '0';
         }
 
         function closeSidebar() {
             sidebarOpen = false;
+            const width = getSidebarWidth();
+            sidebar.style.transition = 'transform 0.35s cubic-bezier(0.16, 1, 0.3, 1)';
+            sidebar.style.transform = `translateX(-${width}px)`;
             sidebar.classList.remove('open');
-            contenidoPrincipal.classList.remove('shifted');
+            if (contenidoPrincipal) contenidoPrincipal.classList.remove('shifted');
             document.body.classList.remove('shifted');
-            if (swipeHandle) swipeHandle.style.opacity = '1';
         }
 
-        if (swipeHandle) {
-            swipeHandle.addEventListener('click', function(e) {
-                e.stopPropagation();
-                if (sidebarOpen) {
-                    closeSidebar();
-                } else {
-                    openSidebar();
+        // Iniciar arrastre (Touch o Mouse)
+        function handleDragStart(x, y) {
+            // Permitir abrir si la barra ya está abierta o si el clic/toque inicia en los primeros 60px izquierdos
+            if (sidebarOpen || x <= 60) {
+                isDragging = true;
+                isHorizontalDrag = false;
+                startX = x;
+                startY = y;
+                currentX = x;
+                currentY = y;
+            }
+        }
+
+        // Mover en tiempo real siguiendo el dedo/mouse milímetro a milímetro
+        function handleDragMove(x, y) {
+            if (!isDragging) return;
+            
+            currentX = x;
+            currentY = y;
+            const deltaX = currentX - startX;
+            const deltaY = currentY - startY;
+
+            if (!isHorizontalDrag) {
+                if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > 6) {
+                    isHorizontalDrag = true;
+                } else if (Math.abs(deltaY) > 15) {
+                    isDragging = false;
+                    return;
                 }
-            });
+            }
+
+            if (isHorizontalDrag) {
+                const width = getSidebarWidth();
+                let targetX;
+
+                if (sidebarOpen) {
+                    targetX = Math.min(0, Math.max(-width, deltaX));
+                } else {
+                    targetX = Math.min(0, Math.max(-width, -width + deltaX));
+                }
+
+                // Sin transición para movimiento fluido 1:1 en tiempo real
+                sidebar.style.transition = 'none';
+                sidebar.style.transform = `translateX(${targetX}px)`;
+            }
         }
 
-        // Detección de gestos de deslizamiento (Swipe)
-        let touchStartX = 0;
-        let touchStartY = 0;
-        let touchEndX = 0;
-        let touchEndY = 0;
+        // Finalizar arrastre
+        function handleDragEnd() {
+            if (!isDragging) return;
+            isDragging = false;
 
-        document.addEventListener('touchstart', function(e) {
-            touchStartX = e.changedTouches[0].screenX;
-            touchStartY = e.changedTouches[0].screenY;
-        }, { passive: true });
+            if (isHorizontalDrag) {
+                const deltaX = currentX - startX;
 
-        document.addEventListener('touchend', function(e) {
-            touchEndX = e.changedTouches[0].screenX;
-            touchEndY = e.changedTouches[0].screenY;
-            procesarGestoSwipe();
-        }, { passive: true });
-
-        function procesarGestoSwipe() {
-            const deltaX = touchEndX - touchStartX;
-            const deltaY = touchEndY - touchStartY;
-
-            // Asegurar que el gesto sea principalmente horizontal
-            if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > 40) {
-                if (deltaX > 0) {
-                    // Deslizar a la derecha -> Abrir menú si inicia cerca del borde o en pantalla
-                    if (!sidebarOpen && touchStartX < window.innerWidth * 0.45) {
+                if (sidebarOpen) {
+                    if (deltaX < -50) {
+                        closeSidebar();
+                    } else {
                         openSidebar();
                     }
                 } else {
-                    // Deslizar a la izquierda -> Cerrar menú si está abierto
-                    if (sidebarOpen) {
+                    if (deltaX > 45) {
+                        openSidebar();
+                    } else {
                         closeSidebar();
                     }
                 }
             }
+            isHorizontalDrag = false;
         }
 
-        // Soporte adicional para arrastrar con mouse en escritorio
-        let isMouseDown = false;
-        let mouseStartX = 0;
+        // Listeners táctiles
+        document.addEventListener('touchstart', function(e) {
+            if (e.touches.length === 1) {
+                handleDragStart(e.touches[0].clientX, e.touches[0].clientY);
+            }
+        }, { passive: true });
 
+        document.addEventListener('touchmove', function(e) {
+            if (e.touches.length === 1) {
+                handleDragMove(e.touches[0].clientX, e.touches[0].clientY);
+            }
+        }, { passive: true });
+
+        document.addEventListener('touchend', function(e) {
+            handleDragEnd();
+        }, { passive: true });
+
+        // Listeners de ratón para PC
         document.addEventListener('mousedown', function(e) {
-            if (e.button === 0) { // Clic izquierdo
-                isMouseDown = true;
-                mouseStartX = e.clientX;
+            if (e.button === 0) {
+                handleDragStart(e.clientX, e.clientY);
+            }
+        });
+
+        document.addEventListener('mousemove', function(e) {
+            if (isDragging) {
+                handleDragMove(e.clientX, e.clientY);
             }
         });
 
         document.addEventListener('mouseup', function(e) {
-            if (isMouseDown) {
-                isMouseDown = false;
-                const deltaX = e.clientX - mouseStartX;
-                if (deltaX > 70 && !sidebarOpen && mouseStartX < 100) {
-                    openSidebar();
-                } else if (deltaX < -70 && sidebarOpen) {
-                    closeSidebar();
-                }
+            if (isDragging) {
+                handleDragEnd();
             }
         });
+
+        if (swipeHandle) {
+            swipeHandle.addEventListener('click', function(e) {
+                e.stopPropagation();
+                if (!sidebarOpen) openSidebar();
+            });
+        }
 
         document.addEventListener('click', function(e) {
             if (sidebarOpen && !sidebar.contains(e.target) && (!swipeHandle || !swipeHandle.contains(e.target))) {
                 closeSidebar();
+            }
+        });
+
+        // Atajo de teclado para PC (presionar 'm' o 'M')
+        document.addEventListener('keydown', function(e) {
+            if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+            if (e.key === 'm' || e.key === 'M') {
+                if (sidebarOpen) closeSidebar();
+                else openSidebar();
             }
         });
 
