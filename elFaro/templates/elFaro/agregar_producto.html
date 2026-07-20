@@ -75,24 +75,38 @@
             display: flex;
             align-items: center;
         }
-        @media (max-width: 600px) {
-            .sidebar {
-                width: 170px;
-                padding-top: 50px;
-                transform: translateX(-170px);
-            }
-            .sidebar.open {
-                transform: translateX(0);
-            }
-            .sidebar-toggle-btn {
-                width: 36px;
-                height: 36px;
-                font-size: 1.2rem;
-                margin-right: 0.5rem;
-            }
-            .contenido-principal.shifted {
-                margin-left: 170px !important;
-            }
+        /* Indicador táctil de deslizamiento para abrir sidebar */
+        .sidebar-swipe-handle {
+            position: fixed;
+            top: 50%;
+            left: 0;
+            transform: translateY(-50%);
+            width: 16px;
+            height: 70px;
+            background: rgba(67, 160, 71, 0.45);
+            border-radius: 0 12px 12px 0;
+            z-index: 2200;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(4px);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 2px 0 10px rgba(0,0,0,0.15);
+        }
+        .sidebar-swipe-handle:hover, .sidebar-swipe-handle.active {
+            width: 24px;
+            background: rgba(67, 160, 71, 0.85);
+        }
+        .swipe-indicator-bar {
+            width: 3px;
+            height: 28px;
+            background: #ffffff;
+            border-radius: 3px;
+            opacity: 0.9;
+        }
+        .sidebar-toggle-btn {
+            display: none !important;
         }
         /* --- Fin sidebar --- */
 
@@ -204,6 +218,10 @@
     </style>
 </head>
 <body>
+    <!-- Indicador lateral para abrir menú deslizando -->
+    <div class="sidebar-swipe-handle" id="swipeHandle" title="Desliza hacia la derecha para abrir menú">
+        <div class="swipe-indicator-bar"></div>
+    </div>
     <!-- Sidebar -->
     <nav class="sidebar" id="sidebar">
         <a href="{% url 'lector_precios' %}" class="sidebar-link{% if request.resolver_match.url_name == 'lector_precios' %} active{% endif %}">Lector de Barras</a>
@@ -267,29 +285,68 @@
         </div>
     </div>
     <script>
-        // Sidebar toggle
+        // --- FUNCIONALIDAD DE DESLIZAMIENTO (SWIPE) PARA SIDEBAR ---
         const sidebar = document.getElementById('sidebar');
-        const sidebarToggle = document.getElementById('sidebarToggle');
-        const sidebarIcon = document.getElementById('sidebarIcon');
         const contenidoPrincipal = document.getElementById('contenidoPrincipal');
+        const swipeHandle = document.getElementById('swipeHandle');
         let sidebarOpen = false;
 
-        function toggleSidebar() {
-            sidebarOpen = !sidebarOpen;
-            sidebar.classList.toggle('open', sidebarOpen);
-            contenidoPrincipal.classList.toggle('shifted', sidebarOpen);
-            sidebarIcon.innerHTML = sidebarOpen ? '&times;' : '&#9776;';
+        function openSidebar() {
+            sidebarOpen = true;
+            sidebar.classList.add('open');
+            if (contenidoPrincipal) contenidoPrincipal.classList.add('shifted');
+            document.body.classList.add('shifted');
+            if (swipeHandle) swipeHandle.style.opacity = '0';
         }
 
-        sidebarToggle.addEventListener('click', function(e) {
-            e.stopPropagation();
-            toggleSidebar();
-        });
+        function closeSidebar() {
+            sidebarOpen = false;
+            sidebar.classList.remove('open');
+            if (contenidoPrincipal) contenidoPrincipal.classList.remove('shifted');
+            document.body.classList.remove('shifted');
+            if (swipeHandle) swipeHandle.style.opacity = '1';
+        }
 
-        // Cerrar sidebar al hacer click fuera en móviles
+        if (swipeHandle) {
+            swipeHandle.addEventListener('click', function(e) {
+                e.stopPropagation();
+                if (sidebarOpen) {
+                    closeSidebar();
+                } else {
+                    openSidebar();
+                }
+            });
+        }
+
+        // Detección de gestos de deslizamiento (Swipe)
+        let touchStartX = 0;
+        let touchStartY = 0;
+        let touchEndX = 0;
+        let touchEndY = 0;
+
+        document.addEventListener('touchstart', function(e) {
+            touchStartX = e.changedTouches[0].screenX;
+            touchStartY = e.changedTouches[0].screenY;
+        }, { passive: true });
+
+        document.addEventListener('touchend', function(e) {
+            touchEndX = e.changedTouches[0].screenX;
+            touchEndY = e.changedTouches[0].screenY;
+            const deltaX = touchEndX - touchStartX;
+            const deltaY = touchEndY - touchStartY;
+
+            if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > 40) {
+                if (deltaX > 0 && !sidebarOpen && touchStartX < window.innerWidth * 0.45) {
+                    openSidebar();
+                } else if (deltaX < 0 && sidebarOpen) {
+                    closeSidebar();
+                }
+            }
+        }, { passive: true });
+
         document.addEventListener('click', function(e) {
-            if (sidebarOpen && !sidebar.contains(e.target) && !sidebarToggle.contains(e.target)) {
-                toggleSidebar();
+            if (sidebarOpen && !sidebar.contains(e.target) && (!swipeHandle || !swipeHandle.contains(e.target))) {
+                closeSidebar();
             }
         });
 

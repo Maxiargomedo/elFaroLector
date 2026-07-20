@@ -46,31 +46,90 @@
             pointer-events: none;
         }
 
-        /* --- NUEVO: Estilos para el botón de cámara en esquina superior derecha --- */
-        .camera-btn {
+        /* --- ESTILOS MODERNIZADOS: Botón de escáner con cámara --- */
+        .camera-btn-modern {
             position: fixed;
-            top: 20px;
-            right: 20px;
+            top: 18px;
+            right: 18px;
             z-index: 3000;
-            background: #43a047;
-            color: #fff;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: #ffffff;
             border: none;
+            border-radius: 30px;
+            padding: 8px 18px 8px 12px;
+            font-size: 0.95rem;
+            font-weight: 700;
+            font-family: 'Montserrat', Arial, sans-serif;
+            cursor: pointer;
+            box-shadow: 0 4px 20px rgba(16, 185, 129, 0.4), 0 2px 6px rgba(0,0,0,0.1);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            backdrop-filter: blur(8px);
+        }
+
+        .camera-btn-modern:hover {
+            transform: translateY(-2px) scale(1.04);
+            box-shadow: 0 6px 25px rgba(16, 185, 129, 0.55), 0 4px 10px rgba(0,0,0,0.15);
+            background: linear-gradient(135deg, #34d399 0%, #059669 100%);
+        }
+
+        .camera-btn-icon-wrapper {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 34px;
+            height: 34px;
+            background: rgba(255, 255, 255, 0.25);
             border-radius: 50%;
-            width: 60px;
-            height: 60px;
-            font-size: 1.5rem;
+        }
+
+        .camera-svg-icon {
+            width: 20px;
+            height: 20px;
+        }
+
+        .scan-laser-line {
+            animation: laserPulse 1.8s infinite ease-in-out;
+        }
+
+        @keyframes laserPulse {
+            0%, 100% { opacity: 0.3; stroke: #34d399; }
+            50% { opacity: 1; stroke: #ffffff; }
+        }
+
+        /* Indicador táctil de deslizamiento para abrir sidebar */
+        .sidebar-swipe-handle {
+            position: fixed;
+            top: 50%;
+            left: 0;
+            transform: translateY(-50%);
+            width: 16px;
+            height: 70px;
+            background: rgba(67, 160, 71, 0.45);
+            border-radius: 0 12px 12px 0;
+            z-index: 2000;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 4px 16px rgba(67, 160, 71, 0.3);
-            transition: all 0.3s ease;
+            backdrop-filter: blur(4px);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 2px 0 10px rgba(0,0,0,0.15);
         }
-        
-        .camera-btn:hover {
-            background: #388e3c;
-            transform: scale(1.1);
-            box-shadow: 0 6px 20px rgba(67, 160, 71, 0.4);
+
+        .sidebar-swipe-handle:hover, .sidebar-swipe-handle.active {
+            width: 24px;
+            background: rgba(67, 160, 71, 0.85);
+        }
+
+        .swipe-indicator-bar {
+            width: 3px;
+            height: 28px;
+            background: #ffffff;
+            border-radius: 3px;
+            opacity: 0.9;
         }
 
         /* --- NUEVO: Estilos para el escáner de códigos de barras --- */
@@ -992,9 +1051,16 @@
         Verificando conexión...
     </div>
 
-    <!-- NUEVO: Botón de cámara en esquina superior derecha -->
-    <button class="camera-btn" id="cameraBtn" title="Escanear con cámara">
-        📷
+    <!-- Botón modernizado para escanear con la cámara -->
+    <button class="camera-btn-modern" id="cameraBtn" title="Escanear código de barras con la cámara">
+        <div class="camera-btn-icon-wrapper">
+            <svg class="camera-svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2" stroke-linecap="round" stroke-linejoin="round"/>
+                <rect x="7" y="7" width="10" height="10" rx="2" stroke-linecap="round"/>
+                <line x1="7" y1="12" x2="17" y2="12" stroke="#ffffff" stroke-width="2.5" class="scan-laser-line"/>
+            </svg>
+        </div>
+        <span class="camera-btn-text">Escanear Código</span>
     </button>
 
     <!-- NUEVO: Overlay del escáner de códigos de barras -->
@@ -1018,10 +1084,10 @@
         </div>
     </div>
 
-    <!-- Botón para mostrar/ocultar sidebar -->
-    <button class="sidebar-toggle-btn" id="sidebarToggle" title="Menú">
-        <span id="sidebarIcon">&#9776;</span>
-    </button>
+    <!-- Indicador lateral para abrir menú deslizando -->
+    <div class="sidebar-swipe-handle" id="swipeHandle" title="Desliza hacia la derecha para abrir menú">
+        <div class="swipe-indicator-bar"></div>
+    </div>
     
     <!-- Sidebar -->
     <nav class="sidebar" id="sidebar">
@@ -1172,29 +1238,102 @@
             setInterval(verificarConexion, 60000);
         });
 
-        // Sidebar toggle
+        // --- FUNCIONALIDAD DE DESLIZAMIENTO (SWIPE) PARA SIDEBAR ---
         const sidebar = document.getElementById('sidebar');
         const contenidoPrincipal = document.getElementById('contenidoPrincipal');
-        const sidebarToggle = document.getElementById('sidebarToggle');
-        const sidebarIcon = document.getElementById('sidebarIcon');
+        const swipeHandle = document.getElementById('swipeHandle');
         let sidebarOpen = false;
 
-        function toggleSidebar() {
-            sidebarOpen = !sidebarOpen;
-            sidebar.classList.toggle('open', sidebarOpen);
-            contenidoPrincipal.classList.toggle('shifted', sidebarOpen);
-            document.body.classList.toggle('shifted', sidebarOpen);
-            sidebarIcon.innerHTML = sidebarOpen ? '&times;' : '&#9776;';
+        function openSidebar() {
+            sidebarOpen = true;
+            sidebar.classList.add('open');
+            contenidoPrincipal.classList.add('shifted');
+            document.body.classList.add('shifted');
+            if (swipeHandle) swipeHandle.style.opacity = '0';
         }
 
-        sidebarToggle.addEventListener('click', function(e) {
-            e.stopPropagation();
-            toggleSidebar();
+        function closeSidebar() {
+            sidebarOpen = false;
+            sidebar.classList.remove('open');
+            contenidoPrincipal.classList.remove('shifted');
+            document.body.classList.remove('shifted');
+            if (swipeHandle) swipeHandle.style.opacity = '1';
+        }
+
+        if (swipeHandle) {
+            swipeHandle.addEventListener('click', function(e) {
+                e.stopPropagation();
+                if (sidebarOpen) {
+                    closeSidebar();
+                } else {
+                    openSidebar();
+                }
+            });
+        }
+
+        // Detección de gestos de deslizamiento (Swipe)
+        let touchStartX = 0;
+        let touchStartY = 0;
+        let touchEndX = 0;
+        let touchEndY = 0;
+
+        document.addEventListener('touchstart', function(e) {
+            touchStartX = e.changedTouches[0].screenX;
+            touchStartY = e.changedTouches[0].screenY;
+        }, { passive: true });
+
+        document.addEventListener('touchend', function(e) {
+            touchEndX = e.changedTouches[0].screenX;
+            touchEndY = e.changedTouches[0].screenY;
+            procesarGestoSwipe();
+        }, { passive: true });
+
+        function procesarGestoSwipe() {
+            const deltaX = touchEndX - touchStartX;
+            const deltaY = touchEndY - touchStartY;
+
+            // Asegurar que el gesto sea principalmente horizontal
+            if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > 40) {
+                if (deltaX > 0) {
+                    // Deslizar a la derecha -> Abrir menú si inicia cerca del borde o en pantalla
+                    if (!sidebarOpen && touchStartX < window.innerWidth * 0.45) {
+                        openSidebar();
+                    }
+                } else {
+                    // Deslizar a la izquierda -> Cerrar menú si está abierto
+                    if (sidebarOpen) {
+                        closeSidebar();
+                    }
+                }
+            }
+        }
+
+        // Soporte adicional para arrastrar con mouse en escritorio
+        let isMouseDown = false;
+        let mouseStartX = 0;
+
+        document.addEventListener('mousedown', function(e) {
+            if (e.button === 0) { // Clic izquierdo
+                isMouseDown = true;
+                mouseStartX = e.clientX;
+            }
+        });
+
+        document.addEventListener('mouseup', function(e) {
+            if (isMouseDown) {
+                isMouseDown = false;
+                const deltaX = e.clientX - mouseStartX;
+                if (deltaX > 70 && !sidebarOpen && mouseStartX < 100) {
+                    openSidebar();
+                } else if (deltaX < -70 && sidebarOpen) {
+                    closeSidebar();
+                }
+            }
         });
 
         document.addEventListener('click', function(e) {
-            if (sidebarOpen && !sidebar.contains(e.target) && !sidebarToggle.contains(e.target)) {
-                toggleSidebar();
+            if (sidebarOpen && !sidebar.contains(e.target) && (!swipeHandle || !swipeHandle.contains(e.target))) {
+                closeSidebar();
             }
         });
 
