@@ -21,7 +21,7 @@ from datetime import datetime
 from urllib.parse import quote
 from urllib.parse import urlparse
 from django.views.decorators.csrf import csrf_exempt
-from .scrapers import obtener_imagen_stock_producto, es_link_supermercado_oficial
+from .scrapers_realtime import obtener_imagen_promocional_realtime
 
 
 def limpiar_codigo_barras(codigo):
@@ -167,7 +167,7 @@ def buscar_producto(request):
         if producto:
             print(f"✅ Producto encontrado: {producto.nombre} con código {producto.codigo_barras}")
             
-            # 1. Verificar si existe imagen alojada localmente en media/productos/{codigo}.jpg
+            # 1. Verificar si existe imagen alojada en servidor local (media/productos/{codigo}.jpg)
             import os
             local_rel_path = f"productos/{producto.codigo_barras}.jpg"
             local_full_path = os.path.join(settings.MEDIA_ROOT, 'productos', f"{producto.codigo_barras}.jpg")
@@ -177,21 +177,11 @@ def buscar_producto(request):
                 imagen_url = settings.MEDIA_URL + local_rel_path
                 print(f"📁 Usando foto alojada en servidor local: {imagen_url}")
             else:
-                imagen_url = getattr(producto, 'imagen_url', None)
-                if not imagen_url or not es_link_supermercado_oficial(imagen_url):
-                    try:
-                        nueva_imagen = obtener_imagen_stock_producto(producto.codigo_barras, producto.nombre)
-                        if nueva_imagen:
-                            imagen_url = nueva_imagen
-                            if hasattr(producto, 'imagen_url') and hasattr(producto, 'save'):
-                                try:
-                                    producto.imagen_url = nueva_imagen
-                                    producto.save(update_fields=['imagen_url'])
-                                    print(f"✅ Guardada imagen de retail: {nueva_imagen}")
-                                except Exception as e_save:
-                                    print(f"Nota guardar imagen_url: {e_save}")
-                    except Exception as e_img:
-                        print(f"Error extrayendo imagen stock: {e_img}")
+                # 2. Buscar URL promocional en tiempo real desde la web (SIN guardar ningún archivo en disco)
+                try:
+                    imagen_url = obtener_imagen_promocional_realtime(producto.nombre, producto.codigo_barras)
+                except Exception as e_img:
+                    print(f"Error buscando imagen tiempo real: {e_img}")
 
             return JsonResponse({
                 'nombre': producto.nombre,
