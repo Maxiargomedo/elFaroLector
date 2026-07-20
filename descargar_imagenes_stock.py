@@ -9,63 +9,73 @@ import urllib.parse
 CSV_FILENAME = 'Lista_de_Precios_Base.csv'
 OUTPUT_DIR = os.path.join(os.path.dirname(__file__), 'imagenes_productos')
 
+# Dominios no deseados (redes sociales / fotos caseras / iconos)
+DOMINIOS_EXCLUIDOS = [
+    'facebook.com', 'instagram.com', 'pinterest.com', 'yapochile',
+    'yapo.cl', 'blogspot.com', 'wordpress.com', 'twitter.com', 'tiktok.com',
+    'reddit.com', 'flickr.com', 'ebay.com', 'stock.adobe.com', 'shutterstock.com',
+    'alamy.com', 'stocksy.com', 'freepik.com', 'vecteezy.com'
+]
+
 HEADERS = {
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
     'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
     'Accept-Language': 'es-CL,es;q=0.9,en-US;q=0.8,en;q=0.7'
 }
 
+def es_url_valida(url):
+    if not url or not isinstance(url, str):
+        return False
+    url_lower = url.lower()
+    if any(bad in url_lower for bad in DOMINIOS_EXCLUIDOS):
+        return False
+    if any(skip in url_lower for skip in ['favicon', 'logo', 'icon', 'avatar', 'banner']):
+        return False
+    return True
+
 def limpiar_nombre_para_busqueda(nombre):
-    """Limpia el nombre del producto quitando caracteres extraños"""
     if not nombre:
         return ""
     nombre_clean = re.sub(r'[\(\)\[\]\{\}\*\_\,]+', ' ', nombre)
     return ' '.join(nombre_clean.split())
 
-def buscar_imagen_google(nombre_producto, codigo_barras):
+def buscar_imagen_promocional(nombre_producto, codigo_barras):
     """
-    Busca la foto promocional/catálogo oficial del producto directamente en Google Images / DuckDuckGo Images
-    usando el nombre exacto del producto.
+    Busca la foto promocional/catálogo oficial del producto en internet
+    usando el nombre exacto de la lista de precios.
     """
     nombre_query = limpiar_nombre_para_busqueda(nombre_producto)
     if not nombre_query:
         return None, None
 
-    # Probar primero con el nombre exacto del producto (como en Google Images)
-    busquedas = [
-        f"{nombre_query}",
-        f"{nombre_query} {codigo_barras}"
+    queries = [
+        f"{nombre_query} supermercado chile",
+        f"{nombre_query}"
     ]
 
-    for query in busquedas:
+    for q in queries:
         try:
-            url_search = f"https://html.duckduckgo.com/html/?q={urllib.parse.quote(query)}"
-            resp = requests.get(url_search, headers=HEADERS, timeout=4.5)
+            url_bing = f"https://www.bing.com/images/search?q={urllib.parse.quote(q)}&cc=CL"
+            resp = requests.get(url_bing, headers=HEADERS, timeout=4.5)
             if resp.status_code == 200:
-                # Extraer URLs de imágenes JPG/PNG/WEBP directamente de los resultados de búsqueda
-                matches = re.findall(r'(https?://[^\s"\'<>]+\.(?:jpg|png|webp|jpeg))', resp.text, re.IGNORECASE)
-                for m_url in matches:
-                    m_lower = m_url.lower()
-                    # Ignorar favicons, logos de navegadores y miniaturas de la propia página de búsqueda
-                    if any(skip in m_lower for skip in ['duckduckgo.com', 'favicon', 'logo', 'icon', 'yandex', 'bing.com/th']):
-                        continue
-                    
-                    # ¡Encontrada foto promocional de producto!
-                    return m_url, 'Google/DuckDuckGo Images'
-        except Exception as e:
+                # Extraer URLs murl de alta calidad en Bing Images
+                murls = re.findall(r'murl&quot;:&quot;(https?://[^&"]+)&quot;', resp.text)
+                for img_url in murls:
+                    if es_url_valida(img_url):
+                        return img_url, 'Búsqueda Web Promocional'
+        except Exception:
             pass
 
     return None, None
 
 def descargar_imagen(url, ruta_salida):
-    """Descarga la imagen del producto y la guarda en disco"""
     try:
         r = requests.get(url, headers=HEADERS, timeout=10)
         if r.status_code == 200 and len(r.content) > 1000:
             with open(ruta_salida, 'wb') as f:
                 f.write(r.content)
             return True
-    except Exception as e:
+    except Exception:
         pass
     return False
 
@@ -79,7 +89,7 @@ def main():
         return
 
     print("==========================================================")
-    print("INICIANDO DESCARGADOR DE IMAGENES PROMOCIONALES DE GOOGLE")
+    print("INICIANDO DESCARGADOR DE IMAGENES PROMOCIONALES DE PRODUCTOS")
     print(f"Carpeta destino: {OUTPUT_DIR}")
     print("==========================================================")
 
@@ -118,7 +128,7 @@ def main():
             continue
 
         print(f"[{idx}/{total}] Buscando foto promocional para: '{nombre}'...")
-        url_img, fuente = buscar_imagen_google(nombre, cod)
+        url_img, fuente = buscar_imagen_promocional(nombre, cod)
 
         if url_img:
             if descargar_imagen(url_img, filepath):
@@ -129,7 +139,7 @@ def main():
                 print(f"   [FAIL] No se pudo descargar la imagen")
         else:
             fallidos += 1
-            print(f"   [WARN] Sin foto promocional encontrada para {nombre}")
+            print(f"   [WARN] Sin foto promocional para {nombre}")
 
         time.sleep(0.12)
 
