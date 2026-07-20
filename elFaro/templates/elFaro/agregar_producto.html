@@ -75,35 +75,16 @@
             display: flex;
             align-items: center;
         }
-        /* Indicador táctil de deslizamiento para abrir sidebar */
+        /* Zona de gestos 100% INVISIBLE en el borde izquierdo para los trabajadores */
         .sidebar-swipe-handle {
             position: fixed;
-            top: 50%;
+            top: 0;
             left: 0;
-            transform: translateY(-50%);
-            width: 16px;
-            height: 70px;
-            background: rgba(67, 160, 71, 0.45);
-            border-radius: 0 12px 12px 0;
+            width: 25px;
+            height: 100vh;
+            background: transparent;
             z-index: 2200;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            backdrop-filter: blur(4px);
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            box-shadow: 2px 0 10px rgba(0,0,0,0.15);
-        }
-        .sidebar-swipe-handle:hover, .sidebar-swipe-handle.active {
-            width: 24px;
-            background: rgba(67, 160, 71, 0.85);
-        }
-        .swipe-indicator-bar {
-            width: 3px;
-            height: 28px;
-            background: #ffffff;
-            border-radius: 3px;
-            opacity: 0.9;
+            pointer-events: auto;
         }
         .sidebar-toggle-btn {
             display: none !important;
@@ -218,10 +199,8 @@
     </style>
 </head>
 <body>
-    <!-- Indicador lateral para abrir menú deslizando -->
-    <div class="sidebar-swipe-handle" id="swipeHandle" title="Desliza hacia la derecha para abrir menú">
-        <div class="swipe-indicator-bar"></div>
-    </div>
+    <!-- Zona de gestos 100% INVISIBLE para los trabajadores -->
+    <div class="sidebar-swipe-handle" id="swipeHandle"></div>
     <!-- Sidebar -->
     <nav class="sidebar" id="sidebar">
         <a href="{% url 'lector_precios' %}" class="sidebar-link{% if request.resolver_match.url_name == 'lector_precios' %} active{% endif %}">Lector de Barras</a>
