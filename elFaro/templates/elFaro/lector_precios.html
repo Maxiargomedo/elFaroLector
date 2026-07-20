@@ -122,6 +122,33 @@
             pointer-events: auto;
         }
 
+        /* Botón 'X' para cerrar la barra lateral */
+        .sidebar-close-btn {
+            position: absolute;
+            top: 14px;
+            right: 14px;
+            background: rgba(255, 255, 255, 0.12);
+            color: #ffffff;
+            border: none;
+            border-radius: 50%;
+            width: 36px;
+            height: 36px;
+            font-size: 1.4rem;
+            line-height: 1;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+            z-index: 2005;
+        }
+
+        .sidebar-close-btn:hover {
+            background: #d32f2f;
+            color: #ffffff;
+            transform: scale(1.1);
+        }
+
         /* --- NUEVO: Estilos para el escáner de códigos de barras --- */
         .scanner-overlay {
             position: fixed;
@@ -1079,6 +1106,8 @@
     
     <!-- Sidebar -->
     <nav class="sidebar" id="sidebar">
+        <!-- Botón 'X' para cerrar -->
+        <button class="sidebar-close-btn" id="sidebarCloseBtn" title="Cerrar menú">&times;</button>
         <a href="{% url 'lector_precios' %}" class="sidebar-link{% if request.resolver_match.url_name == 'lector_precios' %} active{% endif %}">Lector de Barras</a>
         <a href="{% url 'agregar_producto' %}" class="sidebar-link{% if request.resolver_match.url_name == 'agregar_producto' %} active{% endif %}">Agregar Producto</a>
         <a href="{% url 'mantenedor_promociones' %}" class="sidebar-link{% if request.resolver_match.url_name == 'mantenedor_promociones' %} active{% endif %}">Mantenedor de Imágenes de Promociones</a>
@@ -1313,12 +1342,28 @@
             }
         }
 
+        let justDragged = false;
+        let dragResetTimer = null;
+
+        const sidebarCloseBtn = document.getElementById('sidebarCloseBtn');
+        if (sidebarCloseBtn) {
+            sidebarCloseBtn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                closeSidebar();
+            });
+        }
+
         // Finalizar arrastre
         function handleDragEnd() {
             if (!isDragging) return;
             isDragging = false;
 
             if (isHorizontalDrag) {
+                // Evitar que el clic de soltar el ratón en PC cierre la barra inmediatamente
+                justDragged = true;
+                clearTimeout(dragResetTimer);
+                dragResetTimer = setTimeout(() => { justDragged = false; }, 350);
+
                 const deltaX = currentX - startX;
 
                 if (sidebarOpen) {
@@ -1328,7 +1373,7 @@
                         openSidebar();
                     }
                 } else {
-                    if (deltaX > 45) {
+                    if (deltaX > 35) {
                         openSidebar();
                     } else {
                         closeSidebar();
@@ -1382,6 +1427,11 @@
         }
 
         document.addEventListener('click', function(e) {
+            if (justDragged) return; // Ignorar clic producido al soltar el arrastre en PC
+            if (sidebarCloseBtn && sidebarCloseBtn.contains(e.target)) {
+                closeSidebar();
+                return;
+            }
             if (sidebarOpen && !sidebar.contains(e.target) && (!swipeHandle || !swipeHandle.contains(e.target))) {
                 closeSidebar();
             }
