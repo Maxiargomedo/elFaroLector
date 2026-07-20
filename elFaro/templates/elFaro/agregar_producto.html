@@ -293,14 +293,23 @@
         
         <!-- Header del Faro de Algarrobo en la barra lateral -->
         <div class="sidebar-header">
-            <svg class="lighthouse-svg-logo" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                <path d="M12 2L9 6h6l-3-4z" fill="#43a047"/>
-                <path d="M9 6l-1 15h8L15 6H9z" stroke="#ffffff" stroke-width="1.8" stroke-linejoin="round"/>
-                <line x1="9.5" y1="10" x2="14.5" y2="10" stroke="#43a047" stroke-width="2"/>
-                <line x1="9" y1="15" x2="15" y2="15" stroke="#43a047" stroke-width="2"/>
-                <circle cx="12" cy="4.5" r="1.5" fill="#ffd700"/>
-                <line x1="4" y1="4" x2="7.5" y2="5" stroke="#ffd700" stroke-width="1.8" stroke-linecap="round"/>
-                <line x1="20" y1="4" x2="16.5" y2="5" stroke="#ffd700" stroke-width="1.8" stroke-linecap="round"/>
+            <svg class="lighthouse-svg-logo" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <!-- Cúpula y Techo del Faro -->
+                <path d="M 40 24 C 40 16, 56 16, 56 24 Z" fill="#ffffff" />
+                <path d="M 38 24 L 58 24 L 58 28 L 38 28 Z" fill="#ffffff" />
+                
+                <!-- Rayos de Luz hacia la derecha -->
+                <line x1="60" y1="20" x2="80" y2="12" stroke="#ffffff" stroke-width="4" stroke-linecap="round" />
+                <line x1="62" y1="26" x2="86" y2="26" stroke="#ffffff" stroke-width="4" stroke-linecap="round" />
+                <line x1="60" y1="32" x2="80" y2="40" stroke="#ffffff" stroke-width="4" stroke-linecap="round" />
+
+                <!-- Cuerpo del Faro blanco con Franjas Diagonales oscuras -->
+                <path d="M 40 28 L 56 28 L 64 84 L 32 84 Z" fill="#ffffff" />
+                <path d="M 41 38 L 57 32 L 60 48 L 37 54 Z" fill="#222d32" />
+                <path d="M 37 62 L 61 56 L 63 72 L 34 78 Z" fill="#222d32" />
+                
+                <!-- Base del Faro -->
+                <path d="M 28 84 L 68 84 L 68 90 L 28 90 Z" fill="#ffffff" />
             </svg>
             <div class="sidebar-brand-title">
                 <span>EL FARO</span>
