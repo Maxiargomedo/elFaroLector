@@ -2,562 +2,922 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Importar / Exportar Lista de Precios</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Importar / Exportar Lista de Precios - El Faro de Algarrobo</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Montserrat:700,900&display=swap">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800;900&display=swap">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        body {
-            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-            min-height: 100vh;
-            font-family: 'Montserrat', Arial, sans-serif;
+        :root {
+            --primary-emerald: #43a047;
+            --primary-dark: #2e7d32;
+            --sidebar-bg: #222d32;
+            --bg-page: #f1f5f9;
         }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #f1f5f9;
+            min-height: 100vh;
+            font-family: 'Montserrat', sans-serif;
+            color: #1e293b;
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+        }
+
+        /* --- SIDEBAR UNIFICADO --- */
         .sidebar {
             position: fixed;
             top: 0;
             left: 0;
-            width: 220px;
+            width: 250px;
             height: 100%;
             background: #222d32;
             color: #fff;
-            padding-top: 60px;
-            transform: translateX(-220px);
-            transition: transform 0.3s;
+            padding-top: 20px;
+            transform: translateX(-250px);
+            transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
             z-index: 2001;
-            box-shadow: 2px 0 8px rgba(44,62,80,0.08);
+            box-shadow: 4px 0 20px rgba(0,0,0,0.15);
         }
+
         .sidebar.open {
             transform: translateX(0);
         }
-        .sidebar .sidebar-link {
-            display: block;
-            padding: 16px 32px;
-            color: #fff;
-            text-decoration: none;
-            font-weight: 600;
-            font-size: 1.08rem;
-            border-left: 4px solid transparent;
-            transition: background 0.2s, border-color 0.2s;
+
+        .sidebar-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 15px 18px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 12px;
         }
-        .sidebar .sidebar-link:hover,
-        .sidebar .sidebar-link.active {
-            background: #1a2226;
-            border-left: 4px solid #43a047;
-            color: #43a047;
-        }
-        .sidebar-toggle-btn {
-            background: #43a047;
-            color: #fff;
-            border: none;
-            border-radius: 50%;
+
+        .lighthouse-svg-logo {
             width: 42px;
             height: 42px;
+            flex-shrink: 0;
+            filter: drop-shadow(0 2px 8px rgba(67, 160, 71, 0.4));
+        }
+
+        .sidebar-brand-title {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar-brand-title span {
+            font-weight: 900;
+            font-size: 1.05rem;
+            color: #ffffff;
+            letter-spacing: 1px;
+            line-height: 1.1;
+        }
+
+        .sidebar-brand-title small {
+            font-size: 0.68rem;
+            color: #43a047;
+            font-weight: 800;
+            letter-spacing: 1.5px;
+        }
+
+        .sidebar-close-btn {
+            position: absolute;
+            top: 14px;
+            right: 14px;
+            background: rgba(255, 255, 255, 0.12);
+            color: #ffffff;
+            border: none;
+            border-radius: 50%;
+            width: 36px;
+            height: 36px;
+            font-size: 1.4rem;
+            cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.5rem;
-            cursor: pointer;
-            box-shadow: 0 2px 8px rgba(44,62,80,0.08);
-            transition: background 0.2s;
-            margin-right: 1rem;
+            transition: all 0.2s ease;
+            z-index: 2005;
         }
+
+        .sidebar-close-btn:hover {
+            background: #d32f2f;
+            color: #ffffff;
+            transform: scale(1.1);
+        }
+
+        .sidebar .sidebar-link {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 14px 20px;
+            color: #cfd8dc;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.98rem;
+            border-left: 4px solid transparent;
+            transition: all 0.25s ease;
+        }
+
+        .sidebar .sidebar-link:hover, .sidebar .sidebar-link.active {
+            background: #1a2226;
+            border-left: 4px solid #43a047;
+            color: #ffffff;
+        }
+
+        .sidebar-icon-svg {
+            width: 22px;
+            height: 22px;
+            flex-shrink: 0;
+        }
+
+        .sidebar-swipe-handle {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 25px;
+            height: 100vh;
+            background: transparent;
+            z-index: 2200;
+            pointer-events: auto;
+        }
+
+        /* --- CONTENIDO PRINCIPAL Y NAVBAR --- */
+        .contenido-principal {
+            transition: margin-left 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .contenido-principal.shifted {
+            margin-left: 250px !important;
+        }
+
+        .navbar-custom {
+            background: #0f172a;
+            padding: 12px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .navbar-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .sidebar-toggle-btn {
+            background: #43a047;
+            color: #ffffff;
+            border: none;
+            border-radius: 10px;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(67, 160, 71, 0.3);
+            transition: transform 0.2s, background 0.2s;
+        }
+
         .sidebar-toggle-btn:hover {
             background: #388e3c;
+            transform: scale(1.05);
         }
-        .contenido-principal {
-            transition: margin-left 0.3s;
+
+        .navbar-title {
+            color: #ffffff;
+            font-size: 1.15rem;
+            font-weight: 800;
+            letter-spacing: 0.5px;
         }
-        .contenido-principal.shifted {
-            margin-left: 220px !important;
-        }
-        @media (max-width: 600px) {
-            .sidebar {
-                width: 170px;
-                padding-top: 50px;
-                transform: translateX(-170px);
-            }
-            .sidebar.open {
-                transform: translateX(0);
-            }
-            .sidebar-toggle-btn {
-                width: 36px;
-                height: 36px;
-                font-size: 1.2rem;
-                margin-right: 0.5rem;
-            }
-            .contenido-principal.shifted {
-                margin-left: 170px !important;
-            }
-        }
+
+        /* --- CONTENEDOR DE IMPORTACIÓN/EXPORTACIÓN --- */
         .container-box {
-            width: min(1320px, 96vw);
-            margin: 2.5rem auto;
-            background: #fff;
-            border-radius: 1.2rem;
-            box-shadow: 0 12px 32px rgba(44,62,80,0.14);
-            padding: 3rem 3rem 2.8rem 3rem;
-            position: relative;
+            max-width: 1280px;
+            width: 95%;
+            margin: 35px auto 60px auto;
+            background: #ffffff;
+            border-radius: 1.5rem;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.06);
+            padding: 2.8rem;
         }
+
         .pagina-titulo {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            gap: 1.5rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+            gap: 1rem;
         }
-        .pagina-titulo h1 {
-            margin: 0;
+
+        .pagina-titulo-info h1 {
+            font-size: 2rem;
             font-weight: 900;
-            color: #d32f2f;
-            font-size: 1.9rem;
-            letter-spacing: 0.5px;
+            color: #0f172a;
+            margin: 0;
         }
+
+        .pagina-titulo-info p {
+            color: #64748b;
+            font-size: 0.95rem;
+            margin-top: 4px;
+        }
+
         .help-bubble {
-            width: 38px;
-            height: 38px;
+            width: 42px;
+            height: 42px;
             border-radius: 50%;
             border: none;
             background: #43a047;
             color: #fff;
             font-size: 1.1rem;
-            font-weight: 700;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 6px 18px rgba(67, 160, 71, 0.25);
-            transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 4px 14px rgba(67, 160, 71, 0.3);
+            transition: transform 0.2s;
         }
+
         .help-bubble:hover {
-            transform: scale(1.05);
-            box-shadow: 0 8px 20px rgba(67, 160, 71, 0.35);
+            transform: scale(1.08);
+            background: #388e3c;
         }
+
         .tutorial-panel {
             display: none;
-            margin-top: 1.5rem;
-            border: 1px solid rgba(67, 160, 71, 0.2);
-            border-radius: 1rem;
-            padding: 1.5rem;
-            background: #f1f8e9;
-            color: #2e7d32;
+            margin-bottom: 2rem;
+            border: 1px solid rgba(67, 160, 71, 0.3);
+            border-radius: 1.2rem;
+            padding: 1.8rem;
+            background: #f0fdf4;
+            color: #166534;
         }
+
         .tutorial-panel.active {
             display: block;
         }
+
         .tutorial-panel h2 {
             margin-top: 0;
             font-size: 1.2rem;
             font-weight: 800;
         }
+
         .tutorial-panel ol {
-            margin-top: 0.5rem;
-            padding-left: 1.2rem;
+            margin-top: 0.8rem;
+            padding-left: 1.4rem;
+            line-height: 1.6;
         }
+
         .card-block {
-            margin-top: 2rem;
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 1.5rem;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-top: 1rem;
         }
-        .card {
-            border-radius: 1rem;
-            box-shadow: 0 10px 24px rgba(44,62,80,0.12);
-            padding: 1.8rem;
-            background: #fff;
-            height: 100%;
+
+        .card-custom {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 1.2rem;
+            padding: 2rem;
+            box-shadow: 0 6px 18px rgba(0,0,0,0.03);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
         }
-        .csv-preview {
-            margin-top: 1.4rem;
-        }
-        .csv-preview-info {
-            font-size: 0.9rem;
-            color: #455a64;
-            margin-bottom: 0.6rem;
-        }
-        .csv-preview .table-container {
-            max-height: 260px;
-            overflow: auto;
-            border-radius: 0.8rem;
-        }
-        .section-divider {
-            margin: 1.4rem 0;
-            border-top: 1px solid rgba(55, 71, 79, 0.12);
-            padding-top: 1.2rem;
-        }
-        .method-label {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.45rem;
-            font-size: 0.9rem;
+
+        .card-custom h2 {
             font-weight: 800;
-            text-transform: uppercase;
-            letter-spacing: 0.04em;
-            color: #2e7d32;
-            margin-bottom: 0.75rem;
+            font-size: 1.3rem;
+            color: #0f172a;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
-        .method-label i {
+
+        .card-custom h2 i {
             color: #43a047;
         }
-        .bsale-hint {
-            margin-top: 0.2rem;
-            margin-bottom: 0.85rem;
-            font-size: 0.88rem;
-            color: #546e7a;
-        }
-        .card h2 {
-            font-weight: 800;
-            color: #37474f;
-            margin-bottom: 0.8rem;
-        }
-        .card p {
-            color: #546e7a;
+
+        .card-custom p {
+            color: #64748b;
             font-size: 0.95rem;
+            line-height: 1.5;
         }
-        .radio + .radio {
-            margin-top: 0.8rem;
-        }
-        .help-text {
-            font-size: 0.85rem;
-            color: #78909c;
-            margin-left: 1.8rem;
-            margin-top: 0.3rem;
-        }
-        .messages {
-            margin-top: 1.5rem;
-        }
-        .notification {
+
+        .btn-action-green {
+            background: linear-gradient(135deg, #43a047 0%, #2e7d32 100%);
+            color: #ffffff;
+            border: none;
+            padding: 0.85rem 1.8rem;
             border-radius: 0.8rem;
+            font-size: 1rem;
+            font-weight: 800;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            width: 100%;
+            box-shadow: 0 6px 16px rgba(67, 160, 71, 0.25);
+            transition: all 0.2s;
+            margin-top: 1rem;
         }
-        .file.is-boxed .file-cta {
+
+        .btn-action-green:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(67, 160, 71, 0.35);
+        }
+
+        .btn-action-blue {
+            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+            color: #ffffff;
+            border: none;
+            padding: 0.85rem 1.8rem;
             border-radius: 0.8rem;
+            font-size: 1rem;
+            font-weight: 800;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            width: 100%;
+            box-shadow: 0 6px 16px rgba(37, 99, 235, 0.25);
+            transition: all 0.2s;
+            margin-top: 1rem;
         }
-        .file.is-boxed .file-name {
+
+        .btn-action-blue:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(37, 99, 235, 0.35);
+        }
+
+        .btn-action-amber {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            color: #ffffff;
+            border: none;
+            padding: 0.85rem 1.8rem;
             border-radius: 0.8rem;
-            margin-top: 0.6rem;
-            border: 2px dashed rgba(67,160,71,0.35);
-            color: #2e7d32;
-            background: rgba(225, 245, 233, 0.6);
-            font-weight: 600;
+            font-size: 1rem;
+            font-weight: 800;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            width: 100%;
+            box-shadow: 0 6px 16px rgba(245, 158, 11, 0.25);
+            transition: all 0.2s;
+            margin-top: 1rem;
         }
-        .file.is-boxed .file-name.ready {
-            border-color: rgba(67,160,71,0.75);
-            background: rgba(200, 230, 201, 0.8);
+
+        .btn-action-amber:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(245, 158, 11, 0.35);
         }
-        .action-buttons {
-            margin-top: 1.5rem;
-            display: flex;
-            gap: 1rem;
-            flex-wrap: wrap;
+
+        .section-divider {
+            margin: 1.8rem 0;
+            border-top: 1px dashed #cbd5e1;
         }
-        .action-buttons .button {
-            flex: 1 1 180px;
-        }
+
+        /* Modal estilizado */
         .modal-overlay {
             position: fixed;
             top: 0;
             left: 0;
             width: 100vw;
             height: 100vh;
-            background: rgba(33, 43, 54, 0.65);
+            background: rgba(15, 23, 42, 0.7);
             display: none;
             align-items: center;
             justify-content: center;
             z-index: 4000;
+            backdrop-filter: blur(4px);
         }
+
         .modal-overlay.active {
             display: flex;
         }
-        .modal-card {
+
+        .modal-card-custom {
             background: #ffffff;
-            border-radius: 1rem;
-            padding: 2rem;
-            max-width: 420px;
-            width: calc(100% - 2rem);
-            box-shadow: 0 18px 40px rgba(44,62,80,0.22);
+            border-radius: 1.5rem;
+            padding: 2.2rem;
+            max-width: 480px;
+            width: 90%;
+            box-shadow: 0 25px 60px rgba(0,0,0,0.2);
             text-align: center;
         }
-        .modal-card h3 {
-            font-weight: 800;
+
+        .modal-card-custom h3 {
+            font-weight: 900;
             font-size: 1.4rem;
-            margin-bottom: 1rem;
-            color: #d32f2f;
+            color: #0f172a;
+            margin-bottom: 0.8rem;
         }
-        .modal-card p {
-            color: #455a64;
-            margin-bottom: 1.5rem;
+
+        .modal-card-custom p {
+            color: #64748b;
+            font-size: 0.98rem;
+            line-height: 1.5;
+            margin-bottom: 1.8rem;
         }
-        .modal-actions {
+
+        .modal-actions-custom {
             display: flex;
-            gap: 1rem;
-            flex-wrap: wrap;
+            gap: 12px;
         }
-        .modal-actions .button {
-            flex: 1 1 150px;
+
+        .modal-actions-custom button {
+            flex: 1;
+            padding: 0.8rem;
+            border-radius: 0.8rem;
+            font-weight: 800;
+            font-size: 0.95rem;
+            cursor: pointer;
+            border: none;
         }
-        .upload-status {
-            display: none;
-            margin-top: 1rem;
-            border-radius: 0.9rem;
-            padding: 0.85rem 1rem;
-            font-weight: 700;
+
+        .btn-modal-cancel {
+            background: #f1f5f9;
+            color: #64748b;
         }
-        .upload-status.active {
-            display: flex;
-            align-items: center;
-            gap: 0.65rem;
+
+        .btn-modal-confirm {
+            background: #ef4444;
+            color: #ffffff;
         }
-        .upload-spinner {
-            width: 14px;
-            height: 14px;
-            border: 2px solid rgba(255, 255, 255, 0.45);
-            border-top-color: #fff;
-            border-radius: 50%;
-            animation: uploadSpin 0.8s linear infinite;
-            flex: 0 0 auto;
-        }
-        @keyframes uploadSpin {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
-        }
-        @media (max-width: 768px) {
-            .container-box {
-                padding: 2.2rem 1.4rem;
-                margin: 1.5rem;
+
+        @media (max-width: 900px) {
+            .card-block {
+                grid-template-columns: 1fr;
             }
-            .pagina-titulo {
-                flex-direction: column;
-                align-items: flex-start;
+            .container-box {
+                padding: 1.8rem 1.2rem;
+            }
+            .contenido-principal.shifted {
+                margin-left: 0 !important;
             }
         }
     </style>
 </head>
 <body>
+    <!-- Zona de gestos 100% INVISIBLE para los trabajadores -->
+    <div class="sidebar-swipe-handle" id="swipeHandle"></div>
+    
+    <!-- Sidebar con identidad visual 'El Faro de Algarrobo' -->
     <nav class="sidebar" id="sidebar">
-        <a href="{% url 'lector_precios' %}" class="sidebar-link{% if request.resolver_match.url_name == 'lector_precios' %} active{% endif %}">Lector de Barras</a>
-        <a href="{% url 'agregar_producto' %}" class="sidebar-link{% if request.resolver_match.url_name == 'agregar_producto' %} active{% endif %}">Agregar Producto</a>
-        <a href="{% url 'mantenedor_promociones' %}" class="sidebar-link{% if request.resolver_match.url_name == 'mantenedor_promociones' %} active{% endif %}">Mantenedor de Imágenes de Promociones</a>
-        <a href="{% url 'import_export_precios' %}" class="sidebar-link{% if request.resolver_match.url_name == 'import_export_precios' %} active{% endif %}">Importar / Exportar Lista de Precios</a>
+        <button class="sidebar-close-btn" id="sidebarCloseBtn" title="Cerrar menú">&times;</button>
+        
+        <div class="sidebar-header">
+            <svg class="lighthouse-svg-logo" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M 40 24 C 40 16, 56 16, 56 24 Z" fill="#ffffff" />
+                <path d="M 38 24 L 58 24 L 58 28 L 38 28 Z" fill="#ffffff" />
+                <line x1="60" y1="20" x2="80" y2="12" stroke="#ffffff" stroke-width="4" stroke-linecap="round" />
+                <line x1="62" y1="26" x2="86" y2="26" stroke="#ffffff" stroke-width="4" stroke-linecap="round" />
+                <line x1="60" y1="32" x2="80" y2="40" stroke="#ffffff" stroke-width="4" stroke-linecap="round" />
+                <path d="M 40 28 L 56 28 L 64 84 L 32 84 Z" fill="#ffffff" />
+                <path d="M 41 38 L 57 32 L 60 48 L 37 54 Z" fill="#222d32" />
+                <path d="M 37 62 L 61 56 L 63 72 L 34 78 Z" fill="#222d32" />
+                <path d="M 28 84 L 68 84 L 68 90 L 28 90 Z" fill="#ffffff" />
+            </svg>
+            <div class="sidebar-brand-title">
+                <span>EL FARO</span>
+                <small>DE ALGARROBO</small>
+            </div>
+        </div>
+
+        <a href="{% url 'lector_precios' %}" class="sidebar-link{% if request.resolver_match.url_name == 'lector_precios' %} active{% endif %}">
+            <svg class="sidebar-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2"/>
+                <line x1="7" y1="12" x2="17" y2="12" stroke="#43a047" stroke-width="2"/>
+                <line x1="8" y1="8" x2="8" y2="16"/>
+                <line x1="12" y1="8" x2="12" y2="16"/>
+                <line x1="16" y1="8" x2="16" y2="16"/>
+            </svg>
+            <span>Lector de Barras</span>
+        </a>
+        <a href="{% url 'agregar_producto' %}" class="sidebar-link{% if request.resolver_match.url_name == 'agregar_producto' %} active{% endif %}">
+            <svg class="sidebar-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+                <polyline points="3.27 6.96 12 12.01 20.73 6.96"/>
+                <line x1="12" y1="22.08" x2="12" y2="12"/>
+                <line x1="12" y1="8" x2="12" y2="16" stroke="#43a047" stroke-width="2"/>
+                <line x1="8" y1="12" x2="16" y2="12" stroke="#43a047" stroke-width="2"/>
+            </svg>
+            <span>Agregar Producto</span>
+        </a>
+        <a href="{% url 'mantenedor_promociones' %}" class="sidebar-link{% if request.resolver_match.url_name == 'mantenedor_promociones' %} active{% endif %}">
+            <svg class="sidebar-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/>
+                <line x1="7" y1="7" x2="7.01" y2="7"/>
+            </svg>
+            <span>Promociones</span>
+        </a>
+        <a href="{% url 'import_export_precios' %}" class="sidebar-link{% if request.resolver_match.url_name == 'import_export_precios' %} active{% endif %}">
+            <svg class="sidebar-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                <polyline points="17 8 12 3 7 8"/>
+                <line x1="12" y1="3" x2="12" y2="15"/>
+            </svg>
+            <span>Importar / Exportar</span>
+        </a>
     </nav>
 
     <div class="contenido-principal" id="contenidoPrincipal">
-        <nav class="navbar is-light" role="navigation" aria-label="main navigation" id="mainNavbar">
-            <div class="navbar-brand">
-                <button class="sidebar-toggle-btn" id="sidebarToggle" title="Menú" type="button">
-                    <span id="sidebarIcon">&#9776;</span>
+        <!-- Top Navbar -->
+        <header class="navbar-custom">
+            <div class="navbar-left">
+                <button class="sidebar-toggle-btn" id="sidebarToggle" title="Menú Principal (M)">
+                    <i class="fas fa-bars"></i>
                 </button>
+                <div class="navbar-title">IMPORTAR / EXPORTAR PRECIOS</div>
             </div>
-            <div class="navbar-menu is-active" style="width:100%;">
-                <div class="navbar-start">
-                    <span class="navbar-item has-text-weight-semibold">Gestión de Lista de Precios</span>
-                </div>
-            </div>
-        </nav>
+        </header>
 
-        <section class="container-box">
+        <div class="container-box">
             <div class="pagina-titulo">
-                <h1>Importar / Exportar Lista de Precios</h1>
-                <button type="button" class="help-bubble" id="tutorialToggle" aria-expanded="false" aria-controls="tutorialPanel">
+                <div class="pagina-titulo-info">
+                    <h1>Gestión Masiva de Lista de Precios</h1>
+                    <p>Carga masivamente productos desde CSV / Bsale o exporta tu catálogo actual</p>
+                </div>
+                <button type="button" class="help-bubble" id="tutorialToggle" title="Ayuda e instrucciones">
                     <i class="fas fa-question"></i>
                 </button>
             </div>
 
             <div class="tutorial-panel" id="tutorialPanel">
-                <h2>¿Cómo utilizar esta sección?</h2>
+                <h2><i class="fas fa-info-circle mr-2"></i> Instrucciones de Uso</h2>
                 <ol>
-                    <li>Descarga tu respaldo actual desde <strong>Exportar lista</strong>.</li>
-                    <li>Para CSV, prepara un archivo con las columnas obligatorias: <em>codigo_barras</em>, <em>nombre</em>, <em>precio</em>. Opcionales: <em>precio_vecino</em>, <em>sku</em>.</li>
-                    <li>Para Bsale, sube la lista base y la lista vecino en formato <em>.xls</em>. La base aporta el precio normal y el vecino aporta el precio vecino.</li>
-                    <li>Escoge si deseas <strong>borrar todo y volver a cargar</strong> (recomendado) o <strong>solo sobrescribir productos existentes</strong>.</li>
-                    <li>Selecciona el archivo correspondiente y presiona el botón de importación. Confirma la acción cuando se solicite.</li>
-                    <li>Revisa los mensajes de resultado para conocer filas importadas y posibles errores.</li>
+                    <li>Descarga un respaldo actualizado usando el botón <strong>Exportar lista</strong>.</li>
+                    <li>Para archivos CSV: Asegúrate de incluir las columnas <code>codigo_barras</code>, <code>nombre</code> y <code>precio</code>. Opcionales: <code>precio_vecino</code> y <code>sku</code>.</li>
+                    <li>Para Bsale: Sube los archivos <em>.xls</em> exportados de Lista Base y Lista Vecino. El sistema los combinará por código de barras.</li>
+                    <li>Elige el modo de importación: <strong>Borrar todo y volver a cargar</strong> (Recomendado) o <strong>Sobrescribir existentes</strong>.</li>
                 </ol>
             </div>
 
             {% if messages %}
-            <div class="messages">
                 {% for message in messages %}
-                <div class="notification is-{{ message.tags|default:'info' }}">{{ message }}</div>
+                <div class="notification is-{{ message.tags|default:'info' }}" style="border-radius: 0.8rem; font-weight:700;">
+                    {{ message }}
+                </div>
                 {% endfor %}
-            </div>
             {% endif %}
 
             <div class="card-block">
-                <div class="card">
-                    <h2>Importar nueva lista</h2>
-                    <p>Sube un archivo CSV para actualizar los precios. El sistema validará los datos antes de aplicarlos.</p>
-                    <form method="post" enctype="multipart/form-data" id="importForm">
-                        {% csrf_token %}
-                        <input type="hidden" name="action" value="import">
-                        <div class="field" style="margin-top:1rem;">
-                            <div class="file is-boxed is-fullwidth has-name">
+                <!-- Tarjeta de Importación CSV / Bsale -->
+                <div class="card-custom">
+                    <div>
+                        <h2><i class="fas fa-file-csv"></i> Importar desde CSV</h2>
+                        <p>Actualización masiva mediante archivo de texto CSV estandarizado.</p>
+                        
+                        <form method="post" enctype="multipart/form-data" id="importForm" style="margin-top: 1.2rem;">
+                            {% csrf_token %}
+                            <input type="hidden" name="action" value="import">
+                            
+                            <div class="file has-name is-fullwidth mb-4">
                                 <label class="file-label">
                                     <input class="file-input" type="file" name="csv_file" accept=".csv" required>
                                     <span class="file-cta">
                                         <span class="file-icon"><i class="fas fa-upload"></i></span>
-                                        <span class="file-label">Seleccionar archivo CSV…</span>
+                                        <span class="file-label">Seleccionar CSV…</span>
                                     </span>
-                                    <span class="file-name" id="selectedFileName">Ningún archivo seleccionado</span>
+                                    <span class="file-name" style="border-radius: 0 0.8rem 0.8rem 0;">Ningún archivo seleccionado</span>
                                 </label>
                             </div>
-                        </div>
-                        <div class="field" style="margin-top:1.2rem;">
-                            <label class="label">Modo de importación</label>
-                            <label class="radio">
-                                <input type="radio" name="import_mode" value="delete" checked>
-                                Borrar todos los productos antes de importar (recomendado)
-                            </label>
-                            <p class="help-text">Se eliminarán los productos actuales y se cargará únicamente lo que venga en el archivo.</p>
-                            <label class="radio">
-                                <input type="radio" name="import_mode" value="overwrite">
-                                Sobrescribir productos existentes y mantener el resto
-                            </label>
-                            <p class="help-text">Solo se actualizarán los códigos presentes en el archivo; los demás productos permanecerán iguales.</p>
-                        </div>
-                        <div class="action-buttons">
-                            <button type="submit" class="button is-danger is-fullwidth"><i class="fas fa-file-import" style="margin-right:0.5rem;"></i>Importar precios</button>
-                        </div>
-                    </form>
 
-                    <div class="section-divider"></div>
-                    <div class="method-label"><i class="fas fa-file-excel"></i>Importación Bsale .xls</div>
-                    <p class="bsale-hint">Sube la lista base y la lista vecino exportadas desde Bsale. Se combinan por código de barras.</p>
-                    <form method="post" enctype="multipart/form-data" id="bsaleImportForm">
-                        {% csrf_token %}
-                        <input type="hidden" name="action" value="import_bsale">
-                        <div class="field" style="margin-top:1rem;">
-                            <label class="label">Lista base (.xls)</label>
-                            <div class="file is-boxed is-fullwidth has-name">
-                                <label class="file-label">
-                                    <input class="file-input" type="file" name="bsale_base_file" accept=".xls,.xlsx,.html,.htm" required>
-                                    <span class="file-cta">
-                                        <span class="file-icon"><i class="fas fa-file-excel"></i></span>
-                                        <span class="file-label">Seleccionar lista base…</span>
-                                    </span>
-                                    <span class="file-name">Ningún archivo seleccionado</span>
+                            <div style="background: #f8fafc; padding: 1rem; border-radius: 0.8rem; margin-bottom: 1.2rem;">
+                                <label style="font-weight: 800; font-size: 0.9rem; color: #334155; display: block; margin-bottom: 6px;">Modo de Importación:</label>
+                                <label class="radio" style="font-weight: 700; font-size: 0.9rem;">
+                                    <input type="radio" name="import_mode" value="delete" checked>
+                                    Borrar base actual y cargar nuevo archivo
+                                </label>
+                                <br>
+                                <label class="radio" style="font-weight: 700; font-size: 0.9rem; margin-top: 6px;">
+                                    <input type="radio" name="import_mode" value="overwrite">
+                                    Sobrescribir existentes y mantener resto
                                 </label>
                             </div>
-                        </div>
-                        <div class="field" style="margin-top:1rem;">
-                            <label class="label">Lista vecino (.xls)</label>
-                            <div class="file is-boxed is-fullwidth has-name">
-                                <label class="file-label">
-                                    <input class="file-input" type="file" name="bsale_vecino_file" accept=".xls,.xlsx,.html,.htm" required>
-                                    <span class="file-cta">
-                                        <span class="file-icon"><i class="fas fa-file-excel"></i></span>
-                                        <span class="file-label">Seleccionar lista vecino…</span>
-                                    </span>
-                                    <span class="file-name">Ningún archivo seleccionado</span>
-                                </label>
+
+                            <button type="submit" class="btn-action-green">
+                                <i class="fas fa-file-import"></i>
+                                <span>Importar Archivo CSV</span>
+                            </button>
+                        </form>
+
+                        <div class="section-divider"></div>
+
+                        <h2><i class="fas fa-file-excel" style="color: #f59e0b;"></i> Importación Bsale (.xls)</h2>
+                        <p>Combina listas exportadas desde Bsale (Lista Base + Lista Vecino).</p>
+
+                        <form method="post" enctype="multipart/form-data" id="bsaleImportForm" style="margin-top: 1.2rem;">
+                            {% csrf_token %}
+                            <input type="hidden" name="action" value="import_bsale">
+                            
+                            <div class="field mb-3">
+                                <label style="font-weight: 700; font-size: 0.88rem; color: #475569;">Lista Base (.xls)</label>
+                                <div class="file has-name is-fullwidth">
+                                    <label class="file-label">
+                                        <input class="file-input" type="file" name="bsale_base_file" accept=".xls,.xlsx,.html,.htm" required>
+                                        <span class="file-cta">
+                                            <span class="file-icon"><i class="fas fa-file-excel"></i></span>
+                                            <span class="file-label">Lista Base…</span>
+                                        </span>
+                                        <span class="file-name">Ningún archivo</span>
+                                    </label>
+                                </div>
                             </div>
-                        </div>
-                        <div class="field" style="margin-top:1.2rem;">
-                            <label class="label">Modo de importación Bsale</label>
-                            <label class="radio">
-                                <input type="radio" name="bsale_import_mode" value="delete" checked>
-                                Borrar todos los productos antes de importar (recomendado)
-                            </label>
-                            <p class="help-text">Usa esto cuando quieras reemplazar la base completa con las listas de Bsale.</p>
-                            <label class="radio">
-                                <input type="radio" name="bsale_import_mode" value="overwrite">
-                                Sobrescribir productos existentes y mantener el resto
-                            </label>
-                            <p class="help-text">Actualiza solo los códigos presentes en la lista base.</p>
-                        </div>
-                        <div class="action-buttons">
-                            <button type="submit" class="button is-warning is-fullwidth"><i class="fas fa-file-import" style="margin-right:0.5rem;"></i>Importar desde Bsale</button>
-                        </div>
-                    </form>
-                    <div class="notification is-info is-light upload-status" id="bsaleUploadStatus">
-                        <span class="upload-spinner"></span>
-                        <span id="bsaleUploadStatusText">Preparando importación Bsale...</span>
+
+                            <div class="field mb-3">
+                                <label style="font-weight: 700; font-size: 0.88rem; color: #475569;">Lista Vecino (.xls)</label>
+                                <div class="file has-name is-fullwidth">
+                                    <label class="file-label">
+                                        <input class="file-input" type="file" name="bsale_vecino_file" accept=".xls,.xlsx,.html,.htm" required>
+                                        <span class="file-cta">
+                                            <span class="file-icon"><i class="fas fa-file-excel"></i></span>
+                                            <span class="file-label">Lista Vecino…</span>
+                                        </span>
+                                        <span class="file-name">Ningún archivo</span>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <input type="hidden" name="bsale_import_mode" value="delete">
+
+                            <button type="submit" class="btn-action-amber">
+                                <i class="fas fa-sync-alt"></i>
+                                <span>Procesar e Importar Bsale</span>
+                            </button>
+                        </form>
                     </div>
                 </div>
-                <div class="card">
-                    <h2>Exportar lista actual</h2>
-                    <p>Descarga la lista vigente en formato CSV para respaldo o edición.</p>
-                    {% if csv_preview %}
-                    <div class="csv-preview">
-                        <p class="csv-preview-info">Vista previa de columnas y datos incluidos en el archivo.</p>
-                        <div class="table-container">
-                            <table class="table is-bordered is-striped is-hoverable is-fullwidth">
-                                <thead>
-                                    <tr>
-                                        {% for columna in csv_columns %}
-                                        <th>{{ columna.label }}</th>
+
+                <!-- Tarjeta de Exportación -->
+                <div class="card-custom">
+                    <div>
+                        <h2><i class="fas fa-cloud-download-alt"></i> Exportar Lista Actual</h2>
+                        <p>Descarga un archivo CSV respaldando todos los productos registrados en el sistema.</p>
+
+                        {% if csv_preview %}
+                        <div style="margin-top: 1.5rem; background: #f8fafc; border-radius: 1rem; padding: 1rem; border: 1px solid #e2e8f0;">
+                            <p style="font-weight: 800; font-size: 0.85rem; color: #475569; margin-bottom: 8px;">Vista Previa de Columna:</p>
+                            <div style="max-height: 220px; overflow-y: auto;">
+                                <table class="table is-striped is-narrow is-fullwidth" style="font-size: 0.85rem;">
+                                    <thead>
+                                        <tr>
+                                            {% for col in csv_columns %}
+                                            <th>{{ col.label }}</th>
+                                            {% endfor %}
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for fila in csv_preview %}
+                                        <tr>
+                                            {% for val in fila %}
+                                            <td>{{ val }}</td>
+                                            {% endfor %}
+                                        </tr>
                                         {% endfor %}
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for fila in csv_preview %}
-                                    <tr>
-                                        {% for valor in fila %}
-                                        <td>{{ valor }}</td>
-                                        {% endfor %}
-                                    </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
-                        {% if csv_preview_more %}
-                        <p class="help-text" style="margin-left:0;">Mostrando primeras {{ csv_preview|length }} filas de {{ csv_preview_total }}.</p>
                         {% endif %}
                     </div>
-                    {% else %}
-                    <p class="help-text" style="margin-top:1rem;">Aún no hay productos cargados; el archivo se descargará vacío, pero conservará las columnas requeridas.</p>
-                    {% endif %}
-                    <form method="post">
+
+                    <form method="post" style="margin-top: 2rem;">
                         {% csrf_token %}
                         <input type="hidden" name="action" value="export">
-                        <div class="action-buttons">
-                            <button type="submit" class="button is-link is-fullwidth"><i class="fas fa-file-download" style="margin-right:0.5rem;"></i>Exportar lista</button>
-                        </div>
+                        <button type="submit" class="btn-action-blue">
+                            <i class="fas fa-download"></i>
+                            <span>Descargar Catálogo CSV</span>
+                        </button>
                     </form>
                 </div>
             </div>
-        </section>
+        </div>
     </div>
 
-    <div class="modal-overlay" id="confirmModal" role="dialog" aria-modal="true" aria-labelledby="confirmTitle" aria-hidden="true">
-        <div class="modal-card">
-            <h3 id="confirmTitle">Confirmar importación</h3>
-            <p id="confirmMessage">Los productos actuales se reemplazarán según el modo elegido. ¿Deseas continuar?</p>
-            <div class="modal-actions">
-                <button type="button" class="button is-light" id="cancelImportBtn"><i class="fas fa-times" style="margin-right:0.4rem;"></i>Cancelar</button>
-                <button type="button" class="button is-danger" id="confirmImportBtn"><i class="fas fa-check" style="margin-right:0.4rem;"></i>Confirmar</button>
+    <!-- Modal de Confirmación Estilizado -->
+    <div class="modal-overlay" id="confirmModal">
+        <div class="modal-card-custom">
+            <h3><i class="fas fa-exclamation-triangle text-danger mr-2"></i> Confirmar Acción</h3>
+            <p id="confirmMessage">Se procesará la lista seleccionada. ¿Deseas continuar?</p>
+            <div class="modal-actions-custom">
+                <button type="button" class="btn-modal-cancel" id="cancelImportBtn">Cancelar</button>
+                <button type="button" class="btn-modal-confirm" id="confirmImportBtn">Confirmar Importación</button>
             </div>
         </div>
     </div>
 
     <script>
+        // --- SISTEMA DE NAVEGACIÓN Y GESTOS DE SIDEBAR UNIFICADO ---
         const sidebar = document.getElementById('sidebar');
         const contenidoPrincipal = document.getElementById('contenidoPrincipal');
+        const swipeHandle = document.getElementById('swipeHandle');
+        const sidebarCloseBtn = document.getElementById('sidebarCloseBtn');
         const sidebarToggle = document.getElementById('sidebarToggle');
-        const sidebarIcon = document.getElementById('sidebarIcon');
-        let sidebarAbierto = false;
+        
+        let sidebarOpen = false;
+        let isDragging = false;
+        let startX = 0;
+        let startY = 0;
+        let currentX = 0;
+        let currentY = 0;
+        let isHorizontalDrag = false;
+        let justDragged = false;
+        let dragResetTimer = null;
 
-        function alternarSidebar() {
-            sidebarAbierto = !sidebarAbierto;
-            sidebar.classList.toggle('open', sidebarAbierto);
-            contenidoPrincipal.classList.toggle('shifted', sidebarAbierto);
-            sidebarIcon.innerHTML = sidebarAbierto ? '&times;' : '&#9776;';
+        function getSidebarWidth() {
+            return sidebar ? sidebar.offsetWidth || 250 : 250;
         }
 
-        sidebarToggle.addEventListener('click', function(evento) {
-            evento.stopPropagation();
-            alternarSidebar();
+        document.addEventListener('dragstart', function(e) {
+            e.preventDefault();
+        }, false);
+
+        function openSidebar() {
+            if (!sidebar) return;
+            sidebarOpen = true;
+            sidebar.style.transition = 'transform 0.35s cubic-bezier(0.16, 1, 0.3, 1)';
+            sidebar.style.transform = 'translateX(0)';
+            sidebar.classList.add('open');
+            if (contenidoPrincipal) contenidoPrincipal.classList.add('shifted');
+        }
+
+        function closeSidebar() {
+            if (!sidebar) return;
+            sidebarOpen = false;
+            sidebar.style.transition = 'transform 0.35s cubic-bezier(0.16, 1, 0.3, 1)';
+            sidebar.style.transform = 'translateX(-' + getSidebarWidth() + 'px)';
+            sidebar.classList.remove('open');
+            if (contenidoPrincipal) contenidoPrincipal.classList.remove('shifted');
+        }
+
+        function toggleSidebar() {
+            if (sidebarOpen) closeSidebar();
+            else openSidebar();
+        }
+
+        if (sidebarToggle) {
+            sidebarToggle.addEventListener('click', function(e) {
+                e.stopPropagation();
+                toggleSidebar();
+            });
+        }
+
+        if (sidebarCloseBtn) {
+            sidebarCloseBtn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                closeSidebar();
+            });
+        }
+
+        function handleDragStart(x, y) {
+            if (x < 40 || sidebarOpen) {
+                isDragging = true;
+                startX = x;
+                startY = y;
+                currentX = x;
+                currentY = y;
+                isHorizontalDrag = false;
+                if (sidebar) sidebar.style.transition = 'none';
+            }
+        }
+
+        function handleDragMove(x, y) {
+            if (!isDragging) return;
+            currentX = x;
+            currentY = y;
+            const deltaX = currentX - startX;
+            const deltaY = currentY - startY;
+
+            if (!isHorizontalDrag) {
+                if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > 8) {
+                    isHorizontalDrag = true;
+                } else if (Math.abs(deltaY) > 12) {
+                    isDragging = false;
+                    return;
+                }
+            }
+
+            if (isHorizontalDrag) {
+                const width = getSidebarWidth();
+                let newX;
+                if (sidebarOpen) {
+                    newX = Math.min(0, Math.max(-width, deltaX));
+                } else {
+                    newX = Math.min(0, Math.max(-width, -width + deltaX));
+                }
+                if (sidebar) sidebar.style.transform = 'translateX(' + newX + 'px)';
+            }
+        }
+
+        function handleDragEnd() {
+            if (!isDragging) return;
+            isDragging = false;
+
+            if (isHorizontalDrag) {
+                justDragged = true;
+                clearTimeout(dragResetTimer);
+                dragResetTimer = setTimeout(() => { justDragged = false; }, 350);
+
+                const deltaX = currentX - startX;
+
+                if (sidebarOpen) {
+                    if (deltaX < -50) closeSidebar();
+                    else openSidebar();
+                } else {
+                    if (deltaX > 35) openSidebar();
+                    else closeSidebar();
+                }
+            }
+            isHorizontalDrag = false;
+        }
+
+        // Listeners táctiles
+        document.addEventListener('touchstart', function(e) {
+            if (e.touches.length === 1) handleDragStart(e.touches[0].clientX, e.touches[0].clientY);
+        }, { passive: true });
+
+        document.addEventListener('touchmove', function(e) {
+            if (e.touches.length === 1) handleDragMove(e.touches[0].clientX, e.touches[0].clientY);
+        }, { passive: true });
+
+        document.addEventListener('touchend', function(e) { handleDragEnd(); }, { passive: true });
+
+        // Listeners de ratón para PC
+        document.addEventListener('mousedown', function(e) {
+            if (e.button === 0) handleDragStart(e.clientX, e.clientY);
         });
 
-        document.addEventListener('click', function(evento) {
-            if (sidebarAbierto && !sidebar.contains(evento.target) && !sidebarToggle.contains(evento.target)) {
-                alternarSidebar();
+        document.addEventListener('mousemove', function(e) {
+            if (isDragging) handleDragMove(e.clientX, e.clientY);
+        });
+
+        document.addEventListener('mouseup', function(e) {
+            if (isDragging) handleDragEnd();
+        });
+
+        if (swipeHandle) {
+            swipeHandle.addEventListener('click', function(e) {
+                e.stopPropagation();
+                if (!sidebarOpen) openSidebar();
+            });
+        }
+
+        document.addEventListener('click', function(e) {
+            if (justDragged) return;
+            if (sidebarOpen && sidebar && !sidebar.contains(e.target) && (!swipeHandle || !swipeHandle.contains(e.target)) && (!sidebarToggle || !sidebarToggle.contains(e.target))) {
+                closeSidebar();
             }
         });
 
+        // Atajo de teclado 'm' o 'M' para abrir/cerrar sidebar en PC
+        document.addEventListener('keydown', function(e) {
+            if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+            if (e.key === 'm' || e.key === 'M') {
+                toggleSidebar();
+            }
+        });
+
+        // --- LÓGICA DE FORMULARIO E INSTRUCCIONES ---
         const tutorialToggle = document.getElementById('tutorialToggle');
         const tutorialPanel = document.getElementById('tutorialPanel');
-        tutorialToggle.addEventListener('click', function() {
-            tutorialPanel.classList.toggle('active');
-            const expandido = tutorialPanel.classList.contains('active');
-            tutorialToggle.setAttribute('aria-expanded', expandido ? 'true' : 'false');
+        if (tutorialToggle) {
+            tutorialToggle.addEventListener('click', function() {
+                tutorialPanel.classList.toggle('active');
+            });
+        }
+
+        document.querySelectorAll('.file-input').forEach(function(input) {
+            const nameLabel = input.closest('.file').querySelector('.file-name');
+            input.addEventListener('change', function() {
+                if (input.files && input.files.length > 0) {
+                    nameLabel.textContent = input.files[0].name;
+                } else {
+                    nameLabel.textContent = 'Ningún archivo seleccionado';
+                }
+            });
         });
 
         const importForm = document.getElementById('importForm');
@@ -566,122 +926,45 @@
         const confirmMessage = document.getElementById('confirmMessage');
         const confirmImportBtn = document.getElementById('confirmImportBtn');
         const cancelImportBtn = document.getElementById('cancelImportBtn');
-        const bsaleUploadStatus = document.getElementById('bsaleUploadStatus');
-        const bsaleUploadStatusText = document.getElementById('bsaleUploadStatusText');
         let formularioPendiente = null;
 
-        document.querySelectorAll('.file-input').forEach(function(input) {
-            const nameLabel = input.closest('.file').querySelector('.file-name');
-            input.addEventListener('change', function() {
-                if (input.files && input.files.length > 0) {
-                    nameLabel.textContent = input.files[0].name;
-                    nameLabel.classList.add('ready');
-                } else {
-                    nameLabel.textContent = 'Ningún archivo seleccionado';
-                    nameLabel.classList.remove('ready');
-                }
-            });
-        });
-
-        function mostrarModalConfirmacion(formulario) {
-            const modoSeleccionado = formulario.querySelector('input[type="radio"]:checked').value;
-            const esBsale = formulario.id === 'bsaleImportForm';
-            console.log('[Importación] Solicitud de confirmación', {
-                formulario: formulario.id,
-                modo: modoSeleccionado,
-                esBsale: esBsale
-            });
-
-            if (esBsale) {
-                confirmMessage.textContent = modoSeleccionado === 'delete'
-                    ? 'Se eliminarán todos los productos actuales antes de importar las listas de Bsale. La base se reemplazará con los archivos seleccionados.'
-                    : 'Solo se actualizarán los productos presentes en la lista base de Bsale. El resto permanecerá sin cambios.';
-            } else {
-                confirmMessage.textContent = modoSeleccionado === 'delete'
-                    ? 'Se eliminarán todos los productos actuales antes de importar. Esta acción reemplazará la lista con el archivo seleccionado.'
-                    : 'Solo se actualizarán los productos presentes en el archivo. El resto permanecerá sin cambios.';
-            }
-
-            formularioPendiente = formulario;
+        function mostrarModal(form) {
+            formularioPendiente = form;
             confirmModal.classList.add('active');
-            confirmModal.setAttribute('aria-hidden', 'false');
         }
 
-        function prepararFormularioConfirmable(formulario) {
-            formulario.addEventListener('submit', function(evento) {
-                if (formulario.dataset.confirmed) {
-                    console.log('[Importación] Enviando formulario confirmado', {
-                        formulario: formulario.id
-                    });
-                    delete formulario.dataset.confirmed;
-                    return;
-                }
-
-                evento.preventDefault();
-                mostrarModalConfirmacion(formulario);
+        if (importForm) {
+            importForm.addEventListener('submit', function(e) {
+                if (importForm.dataset.confirmed) return;
+                e.preventDefault();
+                mostrarModal(importForm);
             });
         }
 
-        prepararFormularioConfirmable(importForm);
-        prepararFormularioConfirmable(bsaleImportForm);
+        if (bsaleImportForm) {
+            bsaleImportForm.addEventListener('submit', function(e) {
+                if (bsaleImportForm.dataset.confirmed) return;
+                e.preventDefault();
+                mostrarModal(bsaleImportForm);
+            });
+        }
 
-        confirmImportBtn.addEventListener('click', function() {
-            confirmModal.classList.remove('active');
-            confirmModal.setAttribute('aria-hidden', 'true');
-
-            if (formularioPendiente) {
-                const esBsale = formularioPendiente.id === 'bsaleImportForm';
-                const modoSeleccionado = formularioPendiente.querySelector('input[type="radio"]:checked').value;
-                console.log('[Importación] Confirmado por usuario', {
-                    formulario: formularioPendiente.id,
-                    modo: modoSeleccionado,
-                    tipo: esBsale ? 'bsale' : 'csv'
-                });
-
-                if (esBsale) {
-                    const baseInput = formularioPendiente.querySelector('input[name="bsale_base_file"]');
-                    const vecinoInput = formularioPendiente.querySelector('input[name="bsale_vecino_file"]');
-                    const baseNombre = baseInput && baseInput.files && baseInput.files[0] ? baseInput.files[0].name : 'sin archivo';
-                    const vecinoNombre = vecinoInput && vecinoInput.files && vecinoInput.files[0] ? vecinoInput.files[0].name : 'sin archivo';
-
-                    console.log('[Importación Bsale] Archivos seleccionados', {
-                        base: baseNombre,
-                        vecino: vecinoNombre,
-                        modo: modoSeleccionado
-                    });
-
-                    bsaleUploadStatus.classList.add('active');
-                    bsaleUploadStatus.classList.remove('is-danger', 'is-success', 'is-warning');
-                    bsaleUploadStatus.classList.add('is-info');
-                    bsaleUploadStatusText.textContent = 'Subiendo listas de Bsale y procesando datos...';
-                }
-
-                formularioPendiente.dataset.confirmed = 'true';
-                const formularioAEnviar = formularioPendiente;
-                formularioPendiente = null;
-                formularioAEnviar.submit();
-            }
-        });
-
-        cancelImportBtn.addEventListener('click', function() {
-            confirmModal.classList.remove('active');
-            confirmModal.setAttribute('aria-hidden', 'true');
-            console.log('[Importación] Cancelada por usuario');
-            formularioPendiente = null;
-        });
-
-        window.addEventListener('pageshow', function() {
-            if (bsaleUploadStatus) {
-                bsaleUploadStatus.classList.remove('active');
-            }
-        });
-
-        confirmModal.addEventListener('click', function(evento) {
-            if (evento.target === confirmModal) {
+        if (confirmImportBtn) {
+            confirmImportBtn.addEventListener('click', function() {
                 confirmModal.classList.remove('active');
-                confirmModal.setAttribute('aria-hidden', 'true');
-            }
-        });
+                if (formularioPendiente) {
+                    formularioPendiente.dataset.confirmed = "true";
+                    formularioPendiente.submit();
+                }
+            });
+        }
+
+        if (cancelImportBtn) {
+            cancelImportBtn.addEventListener('click', function() {
+                confirmModal.classList.remove('active');
+                formularioPendiente = null;
+            });
+        }
     </script>
 </body>
 </html>
