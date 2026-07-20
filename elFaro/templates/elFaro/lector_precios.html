@@ -969,34 +969,36 @@
         }
         .estado-conexion {
             position: fixed;
-            top: 10px;
-            right: 10px;
-            padding: 5px 10px;
-            border-radius: 4px;
-            font-size: 0.75rem;
-            font-weight: bold;
+            top: 14px;
+            left: 14px;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 800;
             z-index: 3000;
-            opacity: 0;
-            transition: opacity 0.3s;
+            opacity: 1;
+            background: rgba(15, 23, 42, 0.88);
+            backdrop-filter: blur(8px);
+            color: #ffffff;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+            transition: opacity 0.5s ease, transform 0.5s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            pointer-events: none;
         }
         .estado-conexion.online {
-            background-color: #43a047;
+            background: rgba(67, 160, 71, 0.95);
             color: white;
+            border-color: rgba(255, 255, 255, 0.3);
         }
         .estado-conexion.offline {
-            background-color: #d32f2f;
+            background: rgba(211, 47, 47, 0.95);
             color: white;
-            opacity: 1;
-        }
-        .estado-conexion.reconectando {
-            background-color: #ff9800;
-            color: white;
-            opacity: 1;
-            animation: parpadeo 1s infinite;
-        }
-        @keyframes parpadeo {
-            0%, 100% { opacity: 0.7; }
-            50% { opacity: 1; }
+            opacity: 1 !important;
+            display: flex !important;
+            transform: translateY(0) !important;
         }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         @keyframes popUp {
@@ -1795,9 +1797,51 @@
                         closeSidebar();
                     }
                 }
-            }
-            isHorizontalDrag = false;
+        // --- VERIFICACIÓN DE CONEXIÓN CON LA BASE DE DATOS ---
+        const estadoConexion = document.getElementById('estadoConexion');
+
+        function verificarConexionBaseDatos() {
+            fetch('/verificar_conexion/?t=' + Date.now())
+                .then(resp => {
+                    if (resp.ok) return resp.json();
+                    throw new Error('Sin respuesta de Base de Datos');
+                })
+                .then(data => {
+                    if (data.status === 'ok') {
+                        if (estadoConexion) {
+                            estadoConexion.className = 'estado-conexion online';
+                            estadoConexion.innerHTML = '✔ Base de Datos Conectada';
+                            // Desaparecer suavemente una vez verificado
+                            setTimeout(() => {
+                                estadoConexion.style.opacity = '0';
+                                estadoConexion.style.transform = 'translateY(-15px)';
+                                setTimeout(() => {
+                                    estadoConexion.style.display = 'none';
+                                }, 500);
+                            }, 1500);
+                        }
+                    } else {
+                        mostrarErrorBD('Base de Datos fuera de servicio');
+                    }
+                })
+                .catch(err => {
+                    console.warn('Verificación BD:', err);
+                    mostrarErrorBD('Error de conexión con Base de Datos');
+                });
         }
+
+        function mostrarErrorBD(msg) {
+            if (estadoConexion) {
+                estadoConexion.style.display = 'flex';
+                estadoConexion.style.opacity = '1';
+                estadoConexion.style.transform = 'translateY(0)';
+                estadoConexion.className = 'estado-conexion offline';
+                estadoConexion.innerHTML = '⚠️ ' + msg;
+            }
+        }
+
+        window.addEventListener('DOMContentLoaded', verificarConexionBaseDatos);
+        setInterval(verificarConexionBaseDatos, 30000);
 
         // Listeners táctiles
         document.addEventListener('touchstart', function(e) {

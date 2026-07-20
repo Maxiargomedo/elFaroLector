@@ -23,6 +23,7 @@ urlpatterns = [
     path('buscar_producto_barcode/', views.buscar_producto_barcode, name='buscar_producto_barcode'),
     path('api/imagenes_promociones/', views.api_imagenes_promociones, name='api_imagenes_promociones'),
     path('api/imagenes_promociones/', views.imagenes_promociones, name='imagenes_promociones'),
+    path('verificar_conexion/', views.verificar_conexion, name='verificar_conexion'),
 
 
 

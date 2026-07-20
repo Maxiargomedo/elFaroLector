@@ -3953,3 +3953,20 @@ def imagenes_promociones(request):
 ##        'resultados': resultados,
 ##        'productos_validos': [r for r in resultados if r.get('encontrado', False)]
 ##    })
+
+def verificar_conexion(request):
+    """
+    Endpoint de salud que comprueba directamente la conexión activa con la Base de Datos.
+    """
+    try:
+        from django.db import connection
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT 1")
+            row = cursor.fetchone()
+        if row and row[0] == 1:
+            return JsonResponse({'status': 'ok', 'database': 'connected'})
+    except Exception as e:
+        print(f"❌ Error al verificar la base de datos: {e}")
+        return JsonResponse({'status': 'error', 'database': str(e)}, status=500)
+    
+    return JsonResponse({'status': 'error', 'database': 'disconnected'}, status=500)
