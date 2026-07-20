@@ -645,39 +645,222 @@
             justify-content: center;
             animation: fadeIn 0.3s;
         }
+        /* --- CARTA DE PRODUCTO AMPLADA: DISEÑO DE 2 COLUMNAS (Foto Izquierda | Info Derecha) --- */
         .producto-carta-contenido {
-            background: #fff;
+            background: #ffffff;
             border-radius: 2rem;
-            box-shadow: 0 12px 40px 0 rgba(44,62,80,0.35), 0 2px 8px 0 rgba(44,62,80,0.10);
-            width: 90vw;
-            height: 90vh;
-            max-width: 900px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            width: 94vw;
+            height: 88vh;
+            max-width: 1200px;
             max-height: 900px;
             display: flex;
-            flex-direction: column;
             align-items: center;
             justify-content: center;
-            padding: 2.5rem 1.5rem 2rem 1.5rem;
+            padding: 2.2rem 2.5rem;
             position: relative;
-            animation: popUp 0.3s;
+            animation: popUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            overflow: hidden;
         }
-        .producto-carta img { max-height: 40vh; object-fit: contain; }
+
+        .producto-card-body {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
+            height: 100%;
+            gap: 2.5rem;
+        }
+
+        .producto-col-izquierda {
+            flex: 1;
+            max-width: 48%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #f8fafc;
+            border-radius: 1.5rem;
+            padding: 1.5rem;
+            box-shadow: inset 0 0 0 1px rgba(0,0,0,0.06);
+        }
+
+        .producto-col-izquierda.placeholder-left {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .placeholder-icon-svg {
+            width: 120px;
+            height: 120px;
+            opacity: 0.3;
+        }
+
+        .producto-imagen-container {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .producto-imagen-stock {
+            max-width: 100%;
+            max-height: 65vh;
+            object-fit: contain;
+            border-radius: 1rem;
+            transition: transform 0.3s ease;
+        }
+
+        .producto-col-derecha {
+            flex: 1;
+            max-width: 50%;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            justify-content: center;
+            text-align: left;
+            padding-right: 1rem;
+        }
+
+        .producto-meta-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
         .codigo-barras {
-            position: absolute;
-            top: 1.2rem;
-            left: 2rem;
+            position: relative !important;
+            top: auto !important;
+            left: auto !important;
+            font-size: 1.05rem !important;
+            font-weight: 800 !important;
+            color: #475569 !important;
+            background: #f1f5f9;
+            padding: 6px 14px;
+            border-radius: 8px;
+        }
+
+        .sku {
+            position: relative !important;
+            top: auto !important;
+            left: auto !important;
+            font-size: 0.95rem !important;
+            color: #64748b !important;
+            font-weight: 600 !important;
+            background: #f8fafc;
+            padding: 6px 14px;
+            border-radius: 8px;
+        }
+
+        .producto-nombre {
+            font-size: 2.75rem !important;
+            font-weight: 900 !important;
+            color: #0f172a !important;
+            margin-bottom: 1.5rem !important;
+            text-align: left !important;
+            line-height: 1.15 !important;
+            word-break: break-word;
+        }
+
+        .precio-normal-container {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            margin-bottom: 1.2rem;
+        }
+
+        .precio-normal-label {
             font-size: 1.1rem;
-            color: #222;
-            font-weight: bold;
+            font-weight: 800;
+            color: #64748b;
+            letter-spacing: 1.5px;
+        }
+
+        .producto-precio {
+            font-size: 4.5rem !important;
+            font-weight: 900 !important;
+            color: #43a047 !important;
+            line-height: 1 !important;
+            margin-top: 4px;
+            text-align: left !important;
+        }
+
+        .precio-vecino-container {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            margin-top: 0.5rem;
+            background: #f0fdf4;
+            padding: 1.2rem 1.5rem;
+            border-radius: 1.2rem;
+            border-left: 5px solid #43a047;
+            width: 100%;
+        }
+
+        .precio-vecino-label {
+            font-size: 1.2rem !important;
+            font-weight: 800 !important;
+            color: #166534 !important;
             letter-spacing: 1px;
         }
-        .sku {
-            position: absolute;
-            top: 2.4rem;
-            left: 2rem;
-            font-size: 0.9rem;
-            color: #888;
+
+        .precio-vecino-valor {
+            font-size: 3.5rem !important;
+            font-weight: 900 !important;
+            color: #15803d !important;
+            line-height: 1 !important;
+            margin: 4px 0;
         }
+
+        .precio-vecino-nota {
+            font-size: 0.75rem !important;
+            color: #166534 !important;
+            font-weight: 700 !important;
+            margin-top: 6px;
+            line-height: 1.3;
+        }
+
+        /* Adaptabilidad para Pantallas Pequeñas o Móviles */
+        @media (max-width: 850px) {
+            .producto-carta-contenido {
+                width: 95vw;
+                height: 92vh;
+                padding: 1.5rem 1rem;
+                overflow-y: auto;
+            }
+            .producto-card-body {
+                flex-direction: column;
+                gap: 1.2rem;
+            }
+            .producto-col-izquierda, .producto-col-derecha {
+                max-width: 100%;
+                width: 100%;
+                align-items: center;
+                text-align: center;
+            }
+            .producto-col-derecha {
+                padding-right: 0;
+            }
+            .producto-nombre {
+                text-align: center !important;
+                font-size: 2rem !important;
+            }
+            .precio-normal-container, .precio-vecino-container {
+                align-items: center;
+                text-align: center;
+            }
+            .producto-precio {
+                font-size: 3.5rem !important;
+            }
+            .precio-vecino-valor {
+                font-size: 2.8rem !important;
+            }
+        }
+
         .error-msg {
             color: #d32f2f;
             font-size: 2rem;
@@ -685,54 +868,6 @@
             text-align: center;
             margin: auto;
         }
-        .producto-lista-btn {
-            position: fixed;
-            bottom: 2rem;
-            right: 2rem;
-            z-index: 2000;
-            background: #43a047;
-            color: #fff;
-            border: none;
-            border-radius: 50%;
-            width: 60px;
-            height: 60px;
-            font-size: 2rem;
-            box-shadow: 0 4px 16px rgba(44,62,80,0.18);
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .producto-nombre {
-            font-size: 2.86rem !important;
-            font-weight: 900;
-            color: #222;
-            margin-bottom: 1.2rem;
-            text-align: center;
-            word-break: break-word;
-        }
-        .producto-precio {
-            font-size: 4.16rem !important;
-            font-weight: 900;
-            color: #43a047;
-            margin-bottom: 0.5rem;
-            text-align: center;
-        }
-        .precio-vecino-container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            margin-top: -0.5rem;
-            margin-bottom: 1rem;
-        }
-        .precio-vecino-label {
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: #666;
-        }
-        .precio-vecino-valor {
-            font-size: 2.5rem;
-            font-weight: 800;
             color: #2e7d32;
         }
         .estado-conexion {
@@ -1781,25 +1916,43 @@
             let htmlImagen = '';
             if (data.imagen_url && data.imagen_url.trim() !== '') {
                 htmlImagen = `
-                    <div class="producto-imagen-container">
-                        <img src="${data.imagen_url}" alt="${data.nombre}" class="producto-imagen-stock" onerror="this.parentElement.style.display='none';">
+                    <div class="producto-col-izquierda">
+                        <div class="producto-imagen-container">
+                            <img src="${data.imagen_url}" alt="${data.nombre}" class="producto-imagen-stock" onerror="this.parentElement.parentElement.style.display='none';">
+                        </div>
+                    </div>
+                `;
+            } else {
+                htmlImagen = `
+                    <div class="producto-col-izquierda placeholder-left">
+                        <svg class="placeholder-icon-svg" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.5">
+                            <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+                        </svg>
                     </div>
                 `;
             }
 
             cartaContenido.innerHTML = `
-                <span class="codigo-barras" id="codigoBarras">${data.codigo_barras || codigoBuscado}</span>
-                <span class="sku" id="sku">${data.sku ? 'SKU: ' + data.sku : ''}</span>
-                <h2 id="productoNombre" class="producto-nombre">${data.nombre}</h2>
-                ${htmlImagen}
-                <div class="precio-normal-container">
-                    <span class="precio-normal-label">PRECIO NORMAL</span>
-                    <span class="producto-precio" id="productoPrecio">${formatoChileno(data.precio)}</span>
-                </div>
-                <div class="precio-vecino-container" id="precioVecinoContainer" style="display:none;">
-                    <span class="precio-vecino-label">Precio Vecino</span>
-                    <span class="precio-vecino-valor" id="precioVecinoValor"></span>
-                    <span class="precio-vecino-nota">PARA ACCEDER A ESTE PRECIO, DEBES ESTAR INSCRITO Y CUMPLIR CON LOS REQUISITOS DEL PROGRAMA PRECIO VECINO.</span>
+                <div class="producto-card-body">
+                    ${htmlImagen}
+                    <div class="producto-col-derecha">
+                        <div class="producto-meta-header">
+                            <span class="codigo-barras" id="codigoBarras">CÓD: ${data.codigo_barras || codigoBuscado}</span>
+                            ${data.sku ? `<span class="sku" id="sku">SKU: ${data.sku}</span>` : ''}
+                        </div>
+                        <h2 id="productoNombre" class="producto-nombre">${data.nombre}</h2>
+                        
+                        <div class="precio-normal-container">
+                            <span class="precio-normal-label">PRECIO NORMAL</span>
+                            <span class="producto-precio" id="productoPrecio">${formatoChileno(data.precio)}</span>
+                        </div>
+                        
+                        <div class="precio-vecino-container" id="precioVecinoContainer" style="display:none;">
+                            <span class="precio-vecino-label">Precio Vecino</span>
+                            <span class="precio-vecino-valor" id="precioVecinoValor"></span>
+                            <span class="precio-vecino-nota">PARA ACCEDER A ESTE PRECIO, DEBES ESTAR INSCRITO Y CUMPLIR CON LOS REQUISITOS DEL PROGRAMA PRECIO VECINO.</span>
+                        </div>
+                    </div>
                 </div>
             `;
             
