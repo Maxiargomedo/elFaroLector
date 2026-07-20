@@ -4,14 +4,11 @@ import re
 import time
 import requests
 import urllib.parse
-from bs4 import BeautifulSoup
 
 # --- CONFIGURACIÓN ---
 CSV_FILENAME = 'Lista_de_Precios_Base.csv'
 OUTPUT_DIR = os.path.join(os.path.dirname(__file__), 'imagenes_productos')
-REPORT_FILE = os.path.join(os.path.dirname(__file__), 'reporte_descargas.json')
 
-# Lista de dominios CDN oficiales de retail / supermercados (fotos de estudio con fondo blanco)
 RETAIL_CDN_DOMAINS = [
     'jumbocl.vtexassets.com',
     'jumbo.vtexassets.com',
@@ -22,8 +19,7 @@ RETAIL_CDN_DOMAINS = [
     'images.lider.cl',
     'cornershopapp.com',
     'unimarc.vtexassets.com',
-    'santaisabel.vtexassets.com',
-    'tottus.vtexassets.com'
+    'santaisabel.vtexassets.com'
 ]
 
 HEADERS = {
@@ -33,26 +29,19 @@ HEADERS = {
 }
 
 def es_link_supermercado_oficial(url):
-    """Verifica si la URL proviene de un CDN de estudio oficial de supermercado"""
     if not url or not isinstance(url, str):
         return False
     url_lower = url.lower()
     return any(domain in url_lower for domain in RETAIL_CDN_DOMAINS)
 
 def limpiar_nombre_para_busqueda(nombre):
-    """Limpia el nombre del producto para búsquedas en e-commerce"""
     if not nombre:
         return ""
-    # Quitar unidades redundantes, paréntesis y guiones
     nombre_clean = re.sub(r'[\(\)\[\]\{\}\*\_]+', ' ', nombre)
     palabras = nombre_clean.split()
     return ' '.join(palabras[:5])
 
 def buscar_url_imagen_retail(codigo_barras, nombre_producto):
-    """
-    Busca la foto stock oficial de estudio (.jpg/.png sobre fondo blanco) 
-    para un código de barras y nombre de producto.
-    """
     codigo_limpio = str(codigo_barras).strip().lstrip('0')
     codigo_completo = str(codigo_barras).strip()
     nombre_query = limpiar_nombre_para_busqueda(nombre_producto)
@@ -127,34 +116,9 @@ def buscar_url_imagen_retail(codigo_barras, nombre_producto):
         except Exception:
             pass
 
-    # 5. Búsqueda Web filtrando dominios jumbocl.vtexassets.com / i5.walmartimages.cl
-    if nombre_query:
-        try:
-            b_query = f"{nombre_query} {codigo_completo} jumbocl.vtexassets.com OR i5.walmartimages.cl"
-            url_search = f"https://html.duckduckgo.com/html/?q={urllib.parse.quote(b_query)}"
-            resp = requests.get(url_search, headers=HEADERS, timeout=3.5)
-            if resp.status_code == 200:
-                soup = BeautifulSoup(resp.text, 'html.parser')
-                for a in soup.find_all('a'):
-                    href = a.get('href') or ''
-                    if 'uddg=' in href:
-                        href = urllib.parse.unquote(href.split('uddg=')[-1].split('&')[0])
-                    if es_link_supermercado_oficial(href):
-                        return href, 'Web CDN Match'
-
-                for img in soup.find_all('img'):
-                    src = img.get('src') or ''
-                    if src.startswith('//'):
-                        src = 'https:' + src
-                    if es_link_supermercado_oficial(src):
-                        return src, 'Web CDN Image Match'
-        except Exception:
-            pass
-
     return None, None
 
 def descargar_imagen(url, ruta_salida):
-    """Descarga el contenido de la imagen en disco"""
     try:
         r = requests.get(url, headers=HEADERS, timeout=10)
         if r.status_code == 200 and len(r.content) > 1000:
@@ -190,7 +154,6 @@ def main():
                 encabezado_encontrado = True
                 continue
             if encabezado_encontrado:
-                # Columna 1: Código Barras, Columna 2: SKU, Columna 3: Nombre/Variante
                 cod = row[1].strip() if len(row) > 1 else ''
                 nombre = row[3].strip() if len(row) > 3 else (row[2].strip() if len(row) > 2 else '')
                 if cod and re.match(r'^\d+$', cod):
@@ -209,13 +172,12 @@ def main():
         filename = f"{cod}.jpg"
         filepath = os.path.join(OUTPUT_DIR, filename)
 
-        # Si la imagen ya fue descargada previamente, omitir
         if os.path.exists(filepath) and os.path.getsize(filepath) > 1000:
             ya_existian += 1
             print(f"[{idx}/{total}] ⏩ {cod}.jpg ya existe. Omitiendo...")
             continue
 
-        print(f"[{idx}/{total}] 🔍 Buscando foto stock para: '{nombre}' ({cod})...")
+        print(f"[{idx}/{total}] 🔍 Buscando foto de estudio para: '{nombre}' ({cod})...")
         url_img, fuente = buscar_url_imagen_retail(cod, nombre)
 
         if url_img:
@@ -227,10 +189,9 @@ def main():
                 print(f"   ❌ Falló la descarga de URL: {url_img}")
         else:
             fallidos += 1
-            print(f"   ⚠️ No se encontró foto de estudio con fondo blanco para {cod}")
+            print(f"   ⚠️ Sin foto de estudio encontrada para {cod}")
 
-        # Pausa para evitar rate limits
-        time.sleep(0.3)
+        time.sleep(0.15)
 
     print("\n==========================================================")
     print("🎉 DESCARGA FINALIZADA")
