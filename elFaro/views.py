@@ -59,24 +59,21 @@ def buscar_producto(request):
             producto = Producto.objects.filter(codigo_barras=codigo).first()
         except Exception as e:
             print(f"Error en búsqueda exacta: {e}")
-            # Si hay error, intentar búsqueda más específica
             from django.db import connection
+            table_name = Producto._meta.db_table
+            param_char = '%s' if connection.vendor != 'sqlite' else '?'
             with connection.cursor() as cursor:
-                cursor.execute("SELECT id, codigo_barras, nombre, precio, precio_vecino, sku FROM elFaro_producto WHERE codigo_barras = ?", [codigo])
+                cursor.execute(f"SELECT id, codigo_barras, nombre, precio, precio_vecino, sku FROM {table_name} WHERE codigo_barras = {param_char}", [codigo])
                 row = cursor.fetchone()
                 if row:
-                    # Validar que los datos sean válidos antes de crear el objeto
                     try:
                         precio = float(row[3]) if row[3] is not None else 0
                         precio_vecino = float(row[4]) if row[4] is not None else None
                         
-                        # Verificar que los precios sean válidos
                         if precio > 9999999 or (precio_vecino and precio_vecino > 9999999):
-                            # Eliminar producto corrupto
-                            cursor.execute("DELETE FROM elFaro_producto WHERE id = ?", [row[0]])
+                            cursor.execute(f"DELETE FROM {table_name} WHERE id = {param_char}", [row[0]])
                             print(f"Eliminado producto corrupto ID {row[0]} con precios inválidos")
                         else:
-                            # Crear objeto producto manualmente si los datos son válidos
                             producto = type('Producto', (), {
                                 'id': row[0],
                                 'codigo_barras': row[1],
@@ -87,8 +84,7 @@ def buscar_producto(request):
                             })()
                     except (ValueError, TypeError) as ve:
                         print(f"Datos corruptos en producto ID {row[0]}: {ve}")
-                        # Eliminar producto con datos corruptos
-                        cursor.execute("DELETE FROM elFaro_producto WHERE id = ?", [row[0]])
+                        cursor.execute(f"DELETE FROM {table_name} WHERE id = {param_char}", [row[0]])
         
         # Si se solicita SOLO búsqueda exacta, no hacer búsquedas adicionales
         if busqueda_exacta and exacto and no_similar:
@@ -250,8 +246,9 @@ def lector_precios(request):
             
             # Obtener IDs de todos los productos primero
             from django.db import connection
+            table_name = Producto._meta.db_table
             with connection.cursor() as cursor:
-                cursor.execute("SELECT id FROM elFaro_producto")
+                cursor.execute(f"SELECT id FROM {table_name}")
                 product_ids = [row[0] for row in cursor.fetchall()]
             
             # Cargar productos uno por uno, saltando los corruptos
