@@ -112,6 +112,65 @@
             color: #ffffff;
             transform: scale(1.1);
         }
+        /* --- IDENTIDAD VISUAL 'EL FARO DE ALGARROBO': Sidebar & Iconos --- */
+        .sidebar-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 15px 18px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 12px;
+        }
+        .lighthouse-svg-logo {
+            width: 32px;
+            height: 32px;
+            flex-shrink: 0;
+        }
+        .sidebar-brand-title {
+            display: flex;
+            flex-direction: column;
+        }
+        .sidebar-brand-title span {
+            font-weight: 900;
+            font-size: 1.05rem;
+            color: #ffffff;
+            letter-spacing: 1px;
+            line-height: 1.1;
+        }
+        .sidebar-brand-title small {
+            font-size: 0.68rem;
+            color: #43a047;
+            font-weight: 800;
+            letter-spacing: 1.5px;
+        }
+        .sidebar .sidebar-link {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 14px 20px;
+            color: #cfd8dc;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.98rem;
+            border-left: 4px solid transparent;
+            transition: all 0.25s ease;
+        }
+        .sidebar .sidebar-link:hover, .sidebar .sidebar-link.active {
+            background: #1a2226;
+            border-left: 4px solid #43a047;
+            color: #ffffff;
+        }
+        .sidebar-icon-svg {
+            width: 22px;
+            height: 22px;
+            flex-shrink: 0;
+            transition: transform 0.25s ease, color 0.25s ease;
+        }
+        .sidebar .sidebar-link:hover .sidebar-icon-svg,
+        .sidebar .sidebar-link.active .sidebar-icon-svg {
+            transform: scale(1.15);
+            color: #43a047;
+        }
         .sidebar-toggle-btn {
             display: none !important;
         }
@@ -227,14 +286,63 @@
 <body>
     <!-- Zona de gestos 100% INVISIBLE para los trabajadores -->
     <div class="sidebar-swipe-handle" id="swipeHandle"></div>
-    <!-- Sidebar -->
+    <!-- Sidebar con identidad visual 'El Faro de Algarrobo' -->
     <nav class="sidebar" id="sidebar">
         <!-- Botón 'X' para cerrar -->
         <button class="sidebar-close-btn" id="sidebarCloseBtn" title="Cerrar menú">&times;</button>
-        <a href="{% url 'lector_precios' %}" class="sidebar-link{% if request.resolver_match.url_name == 'lector_precios' %} active{% endif %}">Lector de Barras</a>
-        <a href="{% url 'agregar_producto' %}" class="sidebar-link{% if request.resolver_match.url_name == 'agregar_producto' %} active{% endif %}">Agregar Producto</a>
-        <a href="{% url 'mantenedor_promociones' %}" class="sidebar-link{% if request.resolver_match.url_name == 'mantenedor_promociones' %} active{% endif %}">Mantenedor de Imágenes de Promociones</a>
-        <a href="{% url 'import_export_precios' %}" class="sidebar-link{% if request.resolver_match.url_name == 'import_export_precios' %} active{% endif %}">Importar / Exportar Lista de Precios</a>
+        
+        <!-- Header del Faro de Algarrobo en la barra lateral -->
+        <div class="sidebar-header">
+            <svg class="lighthouse-svg-logo" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path d="M12 2L9 6h6l-3-4z" fill="#43a047"/>
+                <path d="M9 6l-1 15h8L15 6H9z" stroke="#ffffff" stroke-width="1.8" stroke-linejoin="round"/>
+                <line x1="9.5" y1="10" x2="14.5" y2="10" stroke="#43a047" stroke-width="2"/>
+                <line x1="9" y1="15" x2="15" y2="15" stroke="#43a047" stroke-width="2"/>
+                <circle cx="12" cy="4.5" r="1.5" fill="#ffd700"/>
+                <line x1="4" y1="4" x2="7.5" y2="5" stroke="#ffd700" stroke-width="1.8" stroke-linecap="round"/>
+                <line x1="20" y1="4" x2="16.5" y2="5" stroke="#ffd700" stroke-width="1.8" stroke-linecap="round"/>
+            </svg>
+            <div class="sidebar-brand-title">
+                <span>EL FARO</span>
+                <small>DE ALGARROBO</small>
+            </div>
+        </div>
+
+        <a href="{% url 'lector_precios' %}" class="sidebar-link{% if request.resolver_match.url_name == 'lector_precios' %} active{% endif %}">
+            <svg class="sidebar-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2"/>
+                <line x1="7" y1="12" x2="17" y2="12" stroke="#43a047" stroke-width="2"/>
+                <line x1="8" y1="8" x2="8" y2="16"/>
+                <line x1="12" y1="8" x2="12" y2="16"/>
+                <line x1="16" y1="8" x2="16" y2="16"/>
+            </svg>
+            <span>Lector de Barras</span>
+        </a>
+        <a href="{% url 'agregar_producto' %}" class="sidebar-link{% if request.resolver_match.url_name == 'agregar_producto' %} active{% endif %}">
+            <svg class="sidebar-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+                <polyline points="3.27 6.96 12 12.01 20.73 6.96"/>
+                <line x1="12" y1="22.08" x2="12" y2="12"/>
+                <line x1="12" y1="8" x2="12" y2="16" stroke="#43a047" stroke-width="2"/>
+                <line x1="8" y1="12" x2="16" y2="12" stroke="#43a047" stroke-width="2"/>
+            </svg>
+            <span>Agregar Producto</span>
+        </a>
+        <a href="{% url 'mantenedor_promociones' %}" class="sidebar-link{% if request.resolver_match.url_name == 'mantenedor_promociones' %} active{% endif %}">
+            <svg class="sidebar-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/>
+                <line x1="7" y1="7" x2="7.01" y2="7"/>
+            </svg>
+            <span>Promociones</span>
+        </a>
+        <a href="{% url 'import_export_precios' %}" class="sidebar-link{% if request.resolver_match.url_name == 'import_export_precios' %} active{% endif %}">
+            <svg class="sidebar-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                <polyline points="17 8 12 3 7 8"/>
+                <line x1="12" y1="3" x2="12" y2="15"/>
+            </svg>
+            <span>Importar / Exportar</span>
+        </a>
     </nav>
     <div class="contenido-principal" id="contenidoPrincipal">
         <!-- Barra de navegación -->
