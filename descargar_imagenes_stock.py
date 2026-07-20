@@ -9,6 +9,7 @@ import urllib.parse
 CSV_FILENAME = 'Lista_de_Precios_Base.csv'
 OUTPUT_DIR = os.path.join(os.path.dirname(__file__), 'imagenes_productos')
 
+# Servidores oficiales de retail (Máxima prioridad: Fotos de estudio aisladas sobre fondo blanco)
 RETAIL_CDN_DOMAINS = [
     'jumbocl.vtexassets.com',
     'jumbo.vtexassets.com',
@@ -19,7 +20,15 @@ RETAIL_CDN_DOMAINS = [
     'images.lider.cl',
     'cornershopapp.com',
     'unimarc.vtexassets.com',
-    'santaisabel.vtexassets.com'
+    'santaisabel.vtexassets.com',
+    'tottus.vtexassets.com'
+]
+
+# Dominios que deben DESCARTARSE por ser fotos de usuarios / redes / fotos caseras
+DOMINIOS_FOTOS_CASERAS = [
+    'facebook.com', 'instagram.com', 'pinterest.com', 'mercadolibre', 'yapochile',
+    'yapo.cl', 'blogspot.com', 'wordpress.com', 'twitter.com', 'tiktok.com',
+    'reddit.com', 'flickr.com', 'ebay.com', 'wallapop.com'
 ]
 
 HEADERS = {
@@ -34,6 +43,12 @@ def es_link_supermercado_oficial(url):
     url_lower = url.lower()
     return any(domain in url_lower for domain in RETAIL_CDN_DOMAINS)
 
+def es_foto_casera_o_red_social(url):
+    if not url or not isinstance(url, str):
+        return True
+    url_lower = url.lower()
+    return any(domain in url_lower for domain in DOMINIOS_FOTOS_CASERAS)
+
 def limpiar_nombre_para_busqueda(nombre):
     if not nombre:
         return ""
@@ -46,7 +61,7 @@ def buscar_url_imagen_retail(codigo_barras, nombre_producto):
     codigo_completo = str(codigo_barras).strip()
     nombre_query = limpiar_nombre_para_busqueda(nombre_producto)
 
-    # 1. Jumbo VTEX API por EAN
+    # 1. Jumbo VTEX API por EAN (Fotos de estudio aisladas)
     for cod in [codigo_completo, codigo_limpio]:
         if len(cod) >= 7:
             try:
@@ -65,7 +80,7 @@ def buscar_url_imagen_retail(codigo_barras, nombre_producto):
             except Exception:
                 pass
 
-    # 2. Lider Walmart API por EAN
+    # 2. Lider Walmart API por EAN (Fotos de estudio aisladas)
     for cod in [codigo_completo, codigo_limpio]:
         if len(cod) >= 7:
             try:
@@ -114,6 +129,28 @@ def buscar_url_imagen_retail(codigo_barras, nombre_producto):
                         if es_link_supermercado_oficial(img_url):
                             return img_url, 'Lider Walmart (Nombre)'
         except Exception:
+            pass
+
+    # 5. BÚSQUEDA DE RESPALDO EN GOOGLE / WEB (Fotos de producto sobre fondo blanco, sin fotos caseras)
+    if nombre_query:
+        try:
+            b_query = f"{nombre_query} {codigo_completo} producto supermercado fondo blanco"
+            url_search = f"https://html.duckduckgo.com/html/?q={urllib.parse.quote(b_query)}"
+            resp = requests.get(url_search, headers=HEADERS, timeout=4.0)
+            if resp.status_code == 200:
+                # Extraer URLs de imágenes directa
+                matches = re.findall(r'(https?://[^\s"\'<>]+\.(?:jpg|png|webp|jpeg))', resp.text, re.IGNORECASE)
+                
+                # Primero probar coincidencia con servidores e-commerce
+                for m_url in matches:
+                    if es_link_supermercado_oficial(m_url):
+                        return m_url, 'Google Web Retail CDN'
+
+                # Segundo probar fotos web que NO sean de redes o caseras
+                for m_url in matches:
+                    if not es_foto_casera_o_red_social(m_url) and not 'duckduckgo' in m_url.lower():
+                        return m_url, 'Google Web Studio Match'
+        except Exception as e:
             pass
 
     return None, None
