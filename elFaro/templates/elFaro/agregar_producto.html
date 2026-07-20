@@ -2,91 +2,89 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Agregar Producto</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agregar Producto - El Faro de Algarrobo</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Montserrat:700,900&display=swap">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800;900&display=swap">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        /* --- Sidebar styles --- */
+        :root {
+            --primary-emerald: #43a047;
+            --primary-dark: #2e7d32;
+            --sidebar-bg: #222d32;
+            --bg-page: #f1f5f9;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #f1f5f9;
+            min-height: 100vh;
+            font-family: 'Montserrat', sans-serif;
+            color: #1e293b;
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+        }
+
+        /* --- SIDEBAR UNIFICADO --- */
         .sidebar {
             position: fixed;
             top: 0;
             left: 0;
-            width: 220px;
+            width: 250px;
             height: 100%;
             background: #222d32;
             color: #fff;
-            padding-top: 60px;
-            transform: translateX(-220px);
-            transition: transform 0.3s;
+            padding-top: 20px;
+            transform: translateX(-250px);
+            transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
             z-index: 2001;
-            box-shadow: 2px 0 8px rgba(44,62,80,0.08);
+            box-shadow: 4px 0 20px rgba(0,0,0,0.15);
         }
+
         .sidebar.open {
             transform: translateX(0);
         }
-        .sidebar .sidebar-link {
-            display: block;
-            padding: 16px 32px;
-            color: #fff;
-            text-decoration: none;
-            font-weight: 600;
-            font-size: 1.08rem;
-            border-left: 4px solid transparent;
-            transition: background 0.2s, border-color 0.2s;
+
+        .sidebar-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 15px 18px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 12px;
         }
-        .sidebar .sidebar-link:hover, .sidebar .sidebar-link.active {
-            background: #1a2226;
-            border-left: 4px solid #43a047;
-            color: #43a047;
-        }
-        .sidebar-toggle-btn {
-            background: #43a047;
-            color: #fff;
-            border: none;
-            border-radius: 50%;
+
+        .lighthouse-svg-logo {
             width: 42px;
             height: 42px;
+            flex-shrink: 0;
+            filter: drop-shadow(0 2px 8px rgba(67, 160, 71, 0.4));
+        }
+
+        .sidebar-brand-title {
             display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.5rem;
-            cursor: pointer;
-            box-shadow: 0 2px 8px rgba(44,62,80,0.08);
-            transition: background 0.2s;
-            margin-right: 1rem;
+            flex-direction: column;
         }
-        .sidebar-toggle-btn:hover {
-            background: #388e3c;
+
+        .sidebar-brand-title span {
+            font-weight: 900;
+            font-size: 1.05rem;
+            color: #ffffff;
+            letter-spacing: 1px;
+            line-height: 1.1;
         }
-        .contenido-principal {
-            transition: margin-left 0.3s;
+
+        .sidebar-brand-title small {
+            font-size: 0.68rem;
+            color: #43a047;
+            font-weight: 800;
+            letter-spacing: 1.5px;
         }
-        .contenido-principal.shifted {
-            margin-left: 220px !important;
-        }
-        .navbar {
-            margin-bottom: 2rem;
-            box-shadow: 0 2px 8px rgba(44,62,80,0.08);
-            transition: margin-left 0.3s;
-            z-index: 2102;
-        }
-        .navbar .navbar-brand {
-            display: flex;
-            align-items: center;
-        }
-        /* Zona de gestos 100% INVISIBLE en el borde izquierdo para los trabajadores */
-        .sidebar-swipe-handle {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 25px;
-            height: 100vh;
-            background: transparent;
-            z-index: 2200;
-            pointer-events: auto;
-        }
-        /* Botón 'X' para cerrar la barra lateral */
+
         .sidebar-close-btn {
             position: absolute;
             top: 14px;
@@ -98,7 +96,6 @@
             width: 36px;
             height: 36px;
             font-size: 1.4rem;
-            line-height: 1;
             cursor: pointer;
             display: flex;
             align-items: center;
@@ -112,37 +109,7 @@
             color: #ffffff;
             transform: scale(1.1);
         }
-        /* --- IDENTIDAD VISUAL 'EL FARO DE ALGARROBO': Sidebar & Iconos --- */
-        .sidebar-header {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 15px 18px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-            margin-bottom: 12px;
-        }
-        .lighthouse-svg-logo {
-            width: 32px;
-            height: 32px;
-            flex-shrink: 0;
-        }
-        .sidebar-brand-title {
-            display: flex;
-            flex-direction: column;
-        }
-        .sidebar-brand-title span {
-            font-weight: 900;
-            font-size: 1.05rem;
-            color: #ffffff;
-            letter-spacing: 1px;
-            line-height: 1.1;
-        }
-        .sidebar-brand-title small {
-            font-size: 0.68rem;
-            color: #43a047;
-            font-weight: 800;
-            letter-spacing: 1.5px;
-        }
+
         .sidebar .sidebar-link {
             display: flex;
             align-items: center;
@@ -155,130 +122,296 @@
             border-left: 4px solid transparent;
             transition: all 0.25s ease;
         }
+
         .sidebar .sidebar-link:hover, .sidebar .sidebar-link.active {
             background: #1a2226;
             border-left: 4px solid #43a047;
             color: #ffffff;
         }
+
         .sidebar-icon-svg {
             width: 22px;
             height: 22px;
             flex-shrink: 0;
-            transition: transform 0.25s ease, color 0.25s ease;
         }
-        .sidebar .sidebar-link:hover .sidebar-icon-svg,
-        .sidebar .sidebar-link.active .sidebar-icon-svg {
-            transform: scale(1.15);
-            color: #43a047;
-        }
-        .sidebar-toggle-btn {
-            display: none !important;
-        }
-        /* --- Fin sidebar --- */
 
-        body {
-            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        .sidebar-swipe-handle {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 25px;
+            height: 100vh;
+            background: transparent;
+            z-index: 2200;
+            pointer-events: auto;
+        }
+
+        /* --- CONTENIDO PRINCIPAL Y NAVBAR --- */
+        .contenido-principal {
+            transition: margin-left 0.35s cubic-bezier(0.16, 1, 0.3, 1);
             min-height: 100vh;
-            font-family: 'Montserrat', Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
         }
-        .container {
-            max-width: 500px;
-            margin-top: 40px;
-            background: #fff;
-            border-radius: 1.2rem;
-            box-shadow: 0 8px 32px rgba(44,62,80,0.12);
-            padding: 2.5rem 2rem 2rem 2rem;
-            transition: margin-left 0.3s;
+
+        .contenido-principal.shifted {
+            margin-left: 250px !important;
         }
-        .title {
-            font-weight: 900;
-            letter-spacing: 1px;
+
+        .navbar-custom {
+            background: #0f172a;
+            padding: 12px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
         }
-        .success-msg {
-            color: #43a047;
-            font-weight: bold;
-            margin-bottom: 1rem;
+
+        .navbar-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
         }
-        .field:not(:last-child) {
-            margin-bottom: 1.2rem;
-        }
-        .button.is-success {
-            background: linear-gradient(90deg, #43a047 0%, #388e3c 100%);
+
+        .sidebar-toggle-btn {
+            background: #43a047;
+            color: #ffffff;
             border: none;
-            color: #fff;
-            font-weight: bold;
-            transition: background 0.2s;
+            border-radius: 10px;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(67, 160, 71, 0.3);
+            transition: transform 0.2s, background 0.2s;
         }
-        .button.is-success:hover {
-            background: linear-gradient(90deg, #388e3c 0%, #43a047 100%);
+
+        .sidebar-toggle-btn:hover {
+            background: #388e3c;
+            transform: scale(1.05);
         }
-        .button.is-light {
-            border: 1px solid #bbb;
-        }
-        label.label {
-            font-weight: 700;
-            color: #d32f2f;
+
+        .navbar-title {
+            color: #ffffff;
+            font-size: 1.15rem;
+            font-weight: 800;
             letter-spacing: 0.5px;
         }
-        
-        /* Estilos mejorados para inputs */
-        .control {
-            position: relative;
+
+        .navbar-links {
+            display: flex;
+            align-items: center;
+            gap: 12px;
         }
-        
-        .input, .input:focus {
-            border-radius: 0.7rem;
-            border: 2px solid #bdbdbd;
-            box-shadow: none;
-            font-size: 1.1rem;
-            padding-left: 2.8rem;
-            height: 3rem;
-            transition: all 0.3s;
-            background-color: #f9f9f9;
+
+        .nav-btn {
+            color: #94a3b8;
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 0.9rem;
+            padding: 8px 16px;
+            border-radius: 8px;
+            transition: all 0.2s;
         }
-        
-        .input:hover {
-            border-color: #888;
+
+        .nav-btn:hover, .nav-btn.active {
+            color: #ffffff;
+            background: rgba(255,255,255,0.1);
         }
-        
-        .input:focus {
-            border-color: #43a047;
-            background-color: #fff;
-            box-shadow: 0 0 0 2px rgba(67, 160, 71, 0.1);
+
+        /* --- CONTENEDOR DE FORMULARIO ELEGANTE --- */
+        .form-page-container {
+            max-width: 850px;
+            width: 92%;
+            margin: 40px auto 60px auto;
+            background: #ffffff;
+            border-radius: 1.5rem;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.06);
+            padding: 3rem;
         }
-        
-        /* Iconos para los inputs */
-        .control::before {
-            font-family: 'Font Awesome 5 Free';
-            position: absolute;
-            left: 1rem;
-            top: 0.75rem;
-            font-size: 1.1rem;
+
+        .form-header {
+            text-align: center;
+            margin-bottom: 2.5rem;
+        }
+
+        .form-header-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: #f0fdf4;
+            color: #166534;
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 800;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+            border: 1px solid rgba(67, 160, 71, 0.2);
+        }
+
+        .form-title {
+            font-size: 2.2rem;
             font-weight: 900;
-            color: #888;
-            z-index: 5;
+            color: #0f172a;
+            margin: 0;
+            letter-spacing: 0.5px;
+        }
+
+        .form-subtitle {
+            color: #64748b;
+            font-size: 0.95rem;
+            margin-top: 6px;
+        }
+
+        /* Grilla de Campos de Formulario */
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+        }
+
+        .form-grid-full {
+            grid-column: span 2;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .form-label {
+            font-weight: 700;
+            font-size: 0.95rem;
+            color: #334155;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .form-label i {
+            color: #43a047;
+        }
+
+        .input-wrapper {
+            position: relative;
+            width: 100%;
+        }
+
+        .input-icon {
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #94a3b8;
+            font-size: 1.1rem;
             pointer-events: none;
+            transition: color 0.2s;
         }
-        
-        .control-nombre::before {
-            content: "\f044"; /* Icono de nombre (lápiz) */
+
+        .input-wrapper input, .form-input-custom {
+            width: 100% !important;
+            height: 3.2rem !important;
+            padding-left: 46px !important;
+            padding-right: 16px !important;
+            border-radius: 0.8rem !important;
+            border: 2px solid #e2e8f0 !important;
+            background: #f8fafc !important;
+            font-size: 1.05rem !important;
+            font-weight: 600 !important;
+            color: #0f172a !important;
+            transition: all 0.2s ease !important;
+            box-shadow: none !important;
+            font-family: 'Montserrat', sans-serif !important;
         }
-        
-        .control-sku::before {
-            content: "\f02b"; /* Icono de SKU (etiqueta) */
+
+        .input-wrapper input:focus {
+            border-color: #43a047 !important;
+            background: #ffffff !important;
+            box-shadow: 0 0 0 4px rgba(67, 160, 71, 0.12) !important;
+            outline: none !important;
         }
-        
-        .control-barcode::before {
-            content: "\f02a"; /* Icono de código de barras */
+
+        .input-wrapper input:focus + .input-icon {
+            color: #43a047;
         }
-        
-        .control-precio::before {
-            content: "\f155"; /* Icono de precio (dólar) */
+
+        /* Botón de Guardado */
+        .form-actions {
+            margin-top: 2.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 16px;
         }
-        
-        @media (max-width: 600px) {
-            .container {
-                padding: 1.2rem 0.5rem 1.2rem 0.5rem;
+
+        .btn-submit-green {
+            background: linear-gradient(135deg, #43a047 0%, #2e7d32 100%);
+            color: #ffffff;
+            border: none;
+            padding: 0.9rem 2.2rem;
+            border-radius: 0.8rem;
+            font-size: 1.1rem;
+            font-weight: 800;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 8px 20px rgba(67, 160, 71, 0.3);
+            transition: all 0.25s ease;
+        }
+
+        .btn-submit-green:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 25px rgba(67, 160, 71, 0.4);
+            background: linear-gradient(135deg, #4caf50 0%, #388e3c 100%);
+        }
+
+        .btn-cancel-grey {
+            background: #f1f5f9;
+            color: #64748b;
+            border: none;
+            padding: 0.9rem 1.8rem;
+            border-radius: 0.8rem;
+            font-size: 1rem;
+            font-weight: 700;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+
+        .btn-cancel-grey:hover {
+            background: #e2e8f0;
+            color: #1e293b;
+        }
+
+        .notification.is-success {
+            background: #f0fdf4;
+            color: #166534;
+            border: 1px solid #bbf7d0;
+            border-radius: 0.8rem;
+            font-weight: 700;
+            margin-bottom: 2rem;
+        }
+
+        @media (max-width: 768px) {
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+            .form-grid-full {
+                grid-column: span 1;
+            }
+            .form-page-container {
+                padding: 1.8rem 1.2rem;
+            }
+            .contenido-principal.shifted {
+                margin-left: 0 !important;
             }
         }
     </style>
@@ -286,29 +419,21 @@
 <body>
     <!-- Zona de gestos 100% INVISIBLE para los trabajadores -->
     <div class="sidebar-swipe-handle" id="swipeHandle"></div>
+    
     <!-- Sidebar con identidad visual 'El Faro de Algarrobo' -->
     <nav class="sidebar" id="sidebar">
-        <!-- Botón 'X' para cerrar -->
         <button class="sidebar-close-btn" id="sidebarCloseBtn" title="Cerrar menú">&times;</button>
         
-        <!-- Header del Faro de Algarrobo en la barra lateral -->
         <div class="sidebar-header">
             <svg class="lighthouse-svg-logo" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <!-- Cúpula y Techo del Faro -->
                 <path d="M 40 24 C 40 16, 56 16, 56 24 Z" fill="#ffffff" />
                 <path d="M 38 24 L 58 24 L 58 28 L 38 28 Z" fill="#ffffff" />
-                
-                <!-- Rayos de Luz hacia la derecha -->
                 <line x1="60" y1="20" x2="80" y2="12" stroke="#ffffff" stroke-width="4" stroke-linecap="round" />
                 <line x1="62" y1="26" x2="86" y2="26" stroke="#ffffff" stroke-width="4" stroke-linecap="round" />
                 <line x1="60" y1="32" x2="80" y2="40" stroke="#ffffff" stroke-width="4" stroke-linecap="round" />
-
-                <!-- Cuerpo del Faro blanco con Franjas Diagonales oscuras -->
                 <path d="M 40 28 L 56 28 L 64 84 L 32 84 Z" fill="#ffffff" />
                 <path d="M 41 38 L 57 32 L 60 48 L 37 54 Z" fill="#222d32" />
                 <path d="M 37 62 L 61 56 L 63 72 L 34 78 Z" fill="#222d32" />
-                
-                <!-- Base del Faro -->
                 <path d="M 28 84 L 68 84 L 68 90 L 28 90 Z" fill="#ffffff" />
             </svg>
             <div class="sidebar-brand-title">
@@ -353,73 +478,109 @@
             <span>Importar / Exportar</span>
         </a>
     </nav>
+
     <div class="contenido-principal" id="contenidoPrincipal">
-        <!-- Barra de navegación -->
-        <nav class="navbar is-light" role="navigation" aria-label="main navigation" id="mainNavbar">
-            <div class="navbar-brand">
-                <!-- Botón para mostrar/ocultar sidebar dentro de la navbar -->
-                <button class="sidebar-toggle-btn" id="sidebarToggle" title="Menú" type="button">
-                    <span id="sidebarIcon">&#9776;</span>
+        <!-- Top Navbar -->
+        <header class="navbar-custom">
+            <div class="navbar-left">
+                <button class="sidebar-toggle-btn" id="sidebarToggle" title="Menú Principal (M)">
+                    <i class="fas fa-bars"></i>
                 </button>
+                <div class="navbar-title">AGREGAR NUEVO PRODUCTO</div>
             </div>
-            <div class="navbar-menu is-active" style="width:100%;">
-                <div class="navbar-start">
-                    <a class="navbar-item" href="{% url 'agregar_producto' %}">Agregar Producto</a>
-                    <a class="navbar-item" href="{% url 'lista_productos' %}">Lista de productos</a>
+            <div class="navbar-links">
+                <a href="{% url 'agregar_producto' %}" class="nav-btn active">Agregar</a>
+                <a href="{% url 'lista_productos' %}" class="nav-btn">Lista de Productos</a>
+            </div>
+        </header>
+
+        <div class="form-page-container">
+            <div class="form-header">
+                <div class="form-header-badge">
+                    <i class="fas fa-plus-circle"></i>
+                    <span>INVENTARIO</span>
                 </div>
+                <h1 class="form-title">Agregar Producto</h1>
+                <p class="form-subtitle">Ingresa la información detallada para registrar el producto en el sistema</p>
             </div>
-        </nav>
-        <div class="container" id="mainContainer">
-            <h1 class="title has-text-centered has-text-danger">Agregar Producto</h1>
+
             {% if messages %}
                 {% for message in messages %}
-                    <div id="successMsg" class="notification is-success success-msg">
-                        {{ message }}
+                    <div class="notification is-success">
+                        <i class="fas fa-check-circle mr-2"></i> {{ message }}
                     </div>
                 {% endfor %}
             {% endif %}
+
             <form method="post" autocomplete="off">
                 {% csrf_token %}
-                <div class="field">
-                    <label class="label">Nombre</label>
-                    <div class="control control-nombre">{{ form.nombre }}</div>
-                </div>
-                <div class="field">
-                    <label class="label">SKU</label>
-                    <div class="control control-sku">{{ form.sku }}</div>
-                </div>
-                <div class="field">
-                    <label class="label">Código de Barras</label>
-                    <div class="control control-barcode">{{ form.codigo_barras }}</div>
-                </div>
-                <div class="field">
-                    <label class="label">Precio</label>
-                    <div class="control control-precio">{{ form.precio }}</div>
-                </div>
-                <div class="field">
-                    <label class="label">Precio Vecino</label>
-                    <div class="control control-precio-vecino">{{ form.precio_vecino }}</div>
-                </div>
-                <div class="field is-grouped is-grouped-centered" style="margin-top:1.5rem;">
-                    <div class="control">
-                        <button type="submit" class="button is-success">Agregar</button>
+                
+                <div class="form-grid">
+                    <!-- Nombre (Ancho completo) -->
+                    <div class="form-group form-grid-full">
+                        <label class="form-label"><i class="fas fa-box"></i> Nombre del Producto</label>
+                        <div class="input-wrapper">
+                            {{ form.nombre }}
+                            <i class="fas fa-pen input-icon"></i>
+                        </div>
                     </div>
+
+                    <!-- SKU -->
+                    <div class="form-group">
+                        <label class="form-label"><i class="fas fa-tag"></i> Código SKU</label>
+                        <div class="input-wrapper">
+                            {{ form.sku }}
+                            <i class="fas fa-barcode input-icon"></i>
+                        </div>
+                    </div>
+
+                    <!-- Código de Barras -->
+                    <div class="form-group">
+                        <label class="form-label"><i class="fas fa-qrcode"></i> Código de Barras</label>
+                        <div class="input-wrapper">
+                            {{ form.codigo_barras }}
+                            <i class="fas fa-stream input-icon"></i>
+                        </div>
+                    </div>
+
+                    <!-- Precio Normal -->
+                    <div class="form-group">
+                        <label class="form-label"><i class="fas fa-dollar-sign"></i> Precio Normal</label>
+                        <div class="input-wrapper">
+                            {{ form.precio }}
+                            <i class="fas fa-dollar-sign input-icon"></i>
+                        </div>
+                    </div>
+
+                    <!-- Precio Vecino -->
+                    <div class="form-group">
+                        <label class="form-label"><i class="fas fa-user-check"></i> Precio Vecino (Socio)</label>
+                        <div class="input-wrapper">
+                            {{ form.precio_vecino }}
+                            <i class="fas fa-star input-icon"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <a href="{% url 'lista_productos' %}" class="btn-cancel-grey">Ver Lista</a>
+                    <button type="submit" class="btn-submit-green">
+                        <i class="fas fa-save"></i>
+                        <span>Guardar Producto</span>
+                    </button>
                 </div>
             </form>
         </div>
     </div>
-    <script>
-        // --- FUNCIONALIDAD DE DESLIZAMIENTO (SWIPE) PARA SIDEBAR ---
-        const sidebar = document.getElementById('sidebar');
-        const contenidoPrincipal = document.getElementById('contenidoPrincipal');
-        const swipeHandle = document.getElementById('swipeHandle');
-        let sidebarOpen = false;
 
-        // --- SISTEMA DE GESTOS EN TIEMPO REAL (REAL-TIME DRAG SIDEBAR) ---
+    <script>
+        // --- SISTEMA DE NAVEGACIÓN Y GESTOS DE SIDEBAR UNIFICADO ---
         const sidebar = document.getElementById('sidebar');
         const contenidoPrincipal = document.getElementById('contenidoPrincipal');
         const swipeHandle = document.getElementById('swipeHandle');
         const sidebarCloseBtn = document.getElementById('sidebarCloseBtn');
+        const sidebarToggle = document.getElementById('sidebarToggle');
+        
         let sidebarOpen = false;
         let isDragging = false;
         let startX = 0;
@@ -439,22 +600,33 @@
         }, false);
 
         function openSidebar() {
+            if (!sidebar) return;
             sidebarOpen = true;
             sidebar.style.transition = 'transform 0.35s cubic-bezier(0.16, 1, 0.3, 1)';
             sidebar.style.transform = 'translateX(0)';
             sidebar.classList.add('open');
             if (contenidoPrincipal) contenidoPrincipal.classList.add('shifted');
-            document.body.classList.add('shifted');
         }
 
         function closeSidebar() {
+            if (!sidebar) return;
             sidebarOpen = false;
-            const width = getSidebarWidth();
             sidebar.style.transition = 'transform 0.35s cubic-bezier(0.16, 1, 0.3, 1)';
-            sidebar.style.transform = `translateX(-${width}px)`;
+            sidebar.style.transform = 'translateX(-' + getSidebarWidth() + 'px)';
             sidebar.classList.remove('open');
             if (contenidoPrincipal) contenidoPrincipal.classList.remove('shifted');
-            document.body.classList.remove('shifted');
+        }
+
+        function toggleSidebar() {
+            if (sidebarOpen) closeSidebar();
+            else openSidebar();
+        }
+
+        if (sidebarToggle) {
+            sidebarToggle.addEventListener('click', function(e) {
+                e.stopPropagation();
+                toggleSidebar();
+            });
         }
 
         if (sidebarCloseBtn) {
@@ -465,13 +637,14 @@
         }
 
         function handleDragStart(x, y) {
-            if (sidebarOpen || x <= 60) {
+            if (x < 40 || sidebarOpen) {
                 isDragging = true;
-                isHorizontalDrag = false;
                 startX = x;
                 startY = y;
                 currentX = x;
                 currentY = y;
+                isHorizontalDrag = false;
+                if (sidebar) sidebar.style.transition = 'none';
             }
         }
 
@@ -483,9 +656,9 @@
             const deltaY = currentY - startY;
 
             if (!isHorizontalDrag) {
-                if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > 6) {
+                if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > 8) {
                     isHorizontalDrag = true;
-                } else if (Math.abs(deltaY) > 15) {
+                } else if (Math.abs(deltaY) > 12) {
                     isDragging = false;
                     return;
                 }
@@ -493,14 +666,13 @@
 
             if (isHorizontalDrag) {
                 const width = getSidebarWidth();
-                let targetX;
+                let newX;
                 if (sidebarOpen) {
-                    targetX = Math.min(0, Math.max(-width, deltaX));
+                    newX = Math.min(0, Math.max(-width, deltaX));
                 } else {
-                    targetX = Math.min(0, Math.max(-width, -width + deltaX));
+                    newX = Math.min(0, Math.max(-width, -width + deltaX));
                 }
-                sidebar.style.transition = 'none';
-                sidebar.style.transform = `translateX(${targetX}px)`;
+                if (sidebar) sidebar.style.transform = 'translateX(' + newX + 'px)';
             }
         }
 
@@ -514,6 +686,7 @@
                 dragResetTimer = setTimeout(() => { justDragged = false; }, 350);
 
                 const deltaX = currentX - startX;
+
                 if (sidebarOpen) {
                     if (deltaX < -50) closeSidebar();
                     else openSidebar();
@@ -525,22 +698,18 @@
             isHorizontalDrag = false;
         }
 
+        // Listeners táctiles
         document.addEventListener('touchstart', function(e) {
-            if (e.touches.length === 1) {
-                handleDragStart(e.touches[0].clientX, e.touches[0].clientY);
-            }
+            if (e.touches.length === 1) handleDragStart(e.touches[0].clientX, e.touches[0].clientY);
         }, { passive: true });
 
         document.addEventListener('touchmove', function(e) {
-            if (e.touches.length === 1) {
-                handleDragMove(e.touches[0].clientX, e.touches[0].clientY);
-            }
+            if (e.touches.length === 1) handleDragMove(e.touches[0].clientX, e.touches[0].clientY);
         }, { passive: true });
 
-        document.addEventListener('touchend', function(e) {
-            handleDragEnd();
-        }, { passive: true });
+        document.addEventListener('touchend', function(e) { handleDragEnd(); }, { passive: true });
 
+        // Listeners de ratón para PC
         document.addEventListener('mousedown', function(e) {
             if (e.button === 0) handleDragStart(e.clientX, e.clientY);
         });
@@ -562,30 +731,17 @@
 
         document.addEventListener('click', function(e) {
             if (justDragged) return;
-            if (sidebarCloseBtn && sidebarCloseBtn.contains(e.target)) {
-                closeSidebar();
-                return;
-            }
-            if (sidebarOpen && !sidebar.contains(e.target) && (!swipeHandle || !swipeHandle.contains(e.target))) {
+            if (sidebarOpen && sidebar && !sidebar.contains(e.target) && (!swipeHandle || !swipeHandle.contains(e.target)) && (!sidebarToggle || !sidebarToggle.contains(e.target))) {
                 closeSidebar();
             }
         });
 
-        // Oculta el mensaje de éxito después de 3 segundos
-        window.addEventListener('DOMContentLoaded', function() {
-            var msg = document.getElementById('successMsg');
-            if (msg) {
-                setTimeout(function() {
-                    msg.style.display = 'none';
-                }, 3000);
+        // Atajo de teclado 'm' o 'M' para abrir/cerrar sidebar en PC
+        document.addEventListener('keydown', function(e) {
+            if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+            if (e.key === 'm' || e.key === 'M') {
+                toggleSidebar();
             }
-            
-            // Añadir clases a inputs generados por Django
-            document.querySelectorAll('input').forEach(function(input) {
-                if (!input.classList.contains('button')) {
-                    input.classList.add('input');
-                }
-            });
         });
     </script>
 </body>

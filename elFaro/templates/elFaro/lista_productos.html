@@ -2,271 +2,824 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Lista de productos</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lista de Productos - El Faro de Algarrobo</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Montserrat:700,900&display=swap">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800;900&display=swap">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        /* --- Sidebar styles --- */
+        :root {
+            --primary-emerald: #43a047;
+            --primary-dark: #2e7d32;
+            --sidebar-bg: #222d32;
+            --bg-page: #f1f5f9;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #f1f5f9;
+            min-height: 100vh;
+            font-family: 'Montserrat', sans-serif;
+            color: #1e293b;
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+        }
+
+        /* --- SIDEBAR UNIFICADO --- */
         .sidebar {
             position: fixed;
             top: 0;
             left: 0;
-            width: 220px;
+            width: 250px;
             height: 100%;
             background: #222d32;
             color: #fff;
-            padding-top: 60px;
-            transform: translateX(-220px);
-            transition: transform 0.3s;
+            padding-top: 20px;
+            transform: translateX(-250px);
+            transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
             z-index: 2001;
-            box-shadow: 2px 0 8px rgba(44,62,80,0.08);
+            box-shadow: 4px 0 20px rgba(0,0,0,0.15);
         }
+
         .sidebar.open {
             transform: translateX(0);
         }
+
+        .sidebar-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 15px 18px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 12px;
+        }
+
+        .lighthouse-svg-logo {
+            width: 42px;
+            height: 42px;
+            flex-shrink: 0;
+            filter: drop-shadow(0 2px 8px rgba(67, 160, 71, 0.4));
+        }
+
+        .sidebar-brand-title {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar-brand-title span {
+            font-weight: 900;
+            font-size: 1.05rem;
+            color: #ffffff;
+            letter-spacing: 1px;
+            line-height: 1.1;
+        }
+
+        .sidebar-brand-title small {
+            font-size: 0.68rem;
+            color: #43a047;
+            font-weight: 800;
+            letter-spacing: 1.5px;
+        }
+
+        .sidebar-close-btn {
+            position: absolute;
+            top: 14px;
+            right: 14px;
+            background: rgba(255, 255, 255, 0.12);
+            color: #ffffff;
+            border: none;
+            border-radius: 50%;
+            width: 36px;
+            height: 36px;
+            font-size: 1.4rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+            z-index: 2005;
+        }
+
+        .sidebar-close-btn:hover {
+            background: #d32f2f;
+            color: #ffffff;
+            transform: scale(1.1);
+        }
+
         .sidebar .sidebar-link {
-            display: block;
-            padding: 16px 32px;
-            color: #fff;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 14px 20px;
+            color: #cfd8dc;
             text-decoration: none;
             font-weight: 600;
-            font-size: 1.08rem;
+            font-size: 0.98rem;
             border-left: 4px solid transparent;
-            transition: background 0.2s, border-color 0.2s;
+            transition: all 0.25s ease;
         }
+
         .sidebar .sidebar-link:hover, .sidebar .sidebar-link.active {
             background: #1a2226;
             border-left: 4px solid #43a047;
-            color: #43a047;
+            color: #ffffff;
         }
+
+        .sidebar-icon-svg {
+            width: 22px;
+            height: 22px;
+            flex-shrink: 0;
+        }
+
+        .sidebar-swipe-handle {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 25px;
+            height: 100vh;
+            background: transparent;
+            z-index: 2200;
+            pointer-events: auto;
+        }
+
+        /* --- CONTENIDO PRINCIPAL Y NAVBAR --- */
+        .contenido-principal {
+            transition: margin-left 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .contenido-principal.shifted {
+            margin-left: 250px !important;
+        }
+
+        .navbar-custom {
+            background: #0f172a;
+            padding: 12px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .navbar-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
         .sidebar-toggle-btn {
             background: #43a047;
-            color: #fff;
+            color: #ffffff;
             border: none;
-            border-radius: 50%;
-            width: 42px;
-            height: 42px;
+            border-radius: 10px;
+            width: 40px;
+            height: 40px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.5rem;
+            font-size: 1.2rem;
             cursor: pointer;
-            box-shadow: 0 2px 8px rgba(44,62,80,0.08);
-            transition: background 0.2s;
-            margin-right: 1rem;
+            box-shadow: 0 4px 12px rgba(67, 160, 71, 0.3);
+            transition: transform 0.2s, background 0.2s;
         }
+
         .sidebar-toggle-btn:hover {
             background: #388e3c;
+            transform: scale(1.05);
         }
-        .contenido-principal {
-            transition: margin-left 0.3s;
+
+        .navbar-title {
+            color: #ffffff;
+            font-size: 1.15rem;
+            font-weight: 800;
+            letter-spacing: 0.5px;
         }
-        .contenido-principal.shifted {
-            margin-left: 220px !important;
-        }
-        .navbar {
-            margin-bottom: 2rem;
-            box-shadow: 0 2px 8px rgba(44,62,80,0.08);
-            transition: margin-left 0.3s;
-            z-index: 2102;
-        }
-        .navbar .navbar-brand {
+
+        .navbar-links {
             display: flex;
             align-items: center;
+            gap: 12px;
         }
-        @media (max-width: 600px) {
-            .sidebar {
-                width: 170px;
-                padding-top: 50px;
-                transform: translateX(-170px);
-            }
-            .sidebar.open {
-                transform: translateX(0);
-            }
-            .sidebar-toggle-btn {
-                width: 36px;
-                height: 36px;
-                font-size: 1.2rem;
-                margin-right: 0.5rem;
+
+        .nav-btn {
+            color: #94a3b8;
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 0.9rem;
+            padding: 8px 16px;
+            border-radius: 8px;
+            transition: all 0.2s;
+        }
+
+        .nav-btn:hover, .nav-btn.active {
+            color: #ffffff;
+            background: rgba(255,255,255,0.1);
+        }
+
+        /* --- CONTENEDOR DE TABLA DE PRODUCTOS --- */
+        .list-page-container {
+            max-width: 1250px;
+            width: 95%;
+            margin: 35px auto 60px auto;
+            background: #ffffff;
+            border-radius: 1.5rem;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.06);
+            padding: 2.5rem;
+        }
+
+        .list-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+        }
+
+        .list-header-info h1 {
+            font-size: 2rem;
+            font-weight: 900;
+            color: #0f172a;
+            margin: 0;
+        }
+
+        .list-header-info p {
+            color: #64748b;
+            font-size: 0.95rem;
+            margin-top: 4px;
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .btn-add-new {
+            background: linear-gradient(135deg, #43a047 0%, #2e7d32 100%);
+            color: #ffffff;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.8rem;
+            font-weight: 800;
+            font-size: 0.95rem;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 6px 16px rgba(67, 160, 71, 0.25);
+            transition: all 0.2s;
+        }
+
+        .btn-add-new:hover {
+            color: #ffffff;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(67, 160, 71, 0.35);
+        }
+
+        /* Barra de búsqueda y controles */
+        .toolbar-box {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            margin-bottom: 1.8rem;
+            flex-wrap: wrap;
+            background: #f8fafc;
+            padding: 1.2rem;
+            border-radius: 1rem;
+            border: 1px solid #e2e8f0;
+        }
+
+        .search-field-custom {
+            flex: 1;
+            min-width: 280px;
+            position: relative;
+        }
+
+        .search-field-custom input {
+            width: 100%;
+            height: 2.8rem;
+            padding-left: 42px;
+            padding-right: 16px;
+            border-radius: 0.7rem;
+            border: 2px solid #cbd5e1;
+            background: #ffffff;
+            font-size: 0.98rem;
+            font-weight: 600;
+            color: #0f172a;
+            transition: all 0.2s;
+        }
+
+        .search-field-custom input:focus {
+            border-color: #43a047;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(67, 160, 71, 0.15);
+        }
+
+        .search-icon-inside {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #94a3b8;
+            font-size: 1rem;
+        }
+
+        .rows-select-custom {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 700;
+            font-size: 0.9rem;
+            color: #475569;
+        }
+
+        .rows-select-custom select {
+            height: 2.8rem;
+            border-radius: 0.7rem;
+            border: 2px solid #cbd5e1;
+            padding: 0 12px;
+            font-weight: 700;
+            color: #0f172a;
+            background: #ffffff;
+            cursor: pointer;
+        }
+
+        /* Tabla Estilizada */
+        .table-responsive-wrapper {
+            width: 100%;
+            overflow-x: auto;
+            border-radius: 1rem;
+            border: 1px solid #e2e8f0;
+        }
+
+        .custom-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: #ffffff;
+        }
+
+        .custom-table th {
+            background: #f1f5f9;
+            color: #334155;
+            font-weight: 800;
+            font-size: 0.88rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            padding: 14px 18px;
+            text-align: left;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        .custom-table td {
+            padding: 14px 18px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: #1e293b;
+            border-bottom: 1px solid #f1f5f9;
+            vertical-align: middle;
+        }
+
+        .custom-table tr:hover td {
+            background: #f8fafc;
+        }
+
+        .badge-price-normal {
+            font-weight: 800;
+            color: #43a047;
+            font-size: 1.05rem;
+        }
+
+        .badge-price-vecino {
+            display: inline-block;
+            background: #f0fdf4;
+            color: #166534;
+            padding: 4px 10px;
+            border-radius: 8px;
+            font-weight: 800;
+            font-size: 0.95rem;
+            border: 1px solid #bbf7d0;
+        }
+
+        .actions-btns {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-action-edit {
+            background: #43a047;
+            color: #ffffff;
+            border: none;
+            padding: 6px 14px;
+            border-radius: 6px;
+            font-weight: 700;
+            font-size: 0.85rem;
+            text-decoration: none;
+            transition: background 0.2s;
+        }
+
+        .btn-action-edit:hover {
+            background: #2e7d32;
+            color: #ffffff;
+        }
+
+        .btn-action-delete {
+            background: #ef4444;
+            color: #ffffff;
+            border: none;
+            padding: 6px 14px;
+            border-radius: 6px;
+            font-weight: 700;
+            font-size: 0.85rem;
+            text-decoration: none;
+            transition: background 0.2s;
+        }
+
+        .btn-action-delete:hover {
+            background: #b91c1c;
+            color: #ffffff;
+        }
+
+        /* Paginación */
+        .pagination-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 2rem;
+        }
+
+        .pagination-link-custom {
+            padding: 8px 14px;
+            border-radius: 8px;
+            background: #f1f5f9;
+            color: #334155;
+            font-weight: 700;
+            font-size: 0.9rem;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .pagination-link-custom.active {
+            background: #43a047;
+            color: #ffffff;
+        }
+
+        .pagination-link-custom:hover:not(.active) {
+            background: #e2e8f0;
+        }
+
+        @media (max-width: 768px) {
+            .list-page-container {
+                padding: 1.5rem 1rem;
             }
             .contenido-principal.shifted {
-                margin-left: 170px !important;
+                margin-left: 0 !important;
             }
-        }
-        /* --- Fin sidebar --- */
-
-        body {
-            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-            min-height: 100vh;
-            font-family: 'Montserrat', Arial, sans-serif;
-        }
-        .container {
-            max-width: 1100px;
-            margin-top: 40px;
-            background: #fff;
-            border-radius: 1.2rem;
-            box-shadow: 0 8px 32px rgba(44,62,80,0.12);
-            padding: 2.5rem 2rem 2rem 2rem;
-        }
-        .title {
-            font-weight: 900;
-            letter-spacing: 1px;
-        }
-        .actions { white-space: nowrap; }
-        .search-box { margin-bottom: 1.5rem; }
-        .table th, .table td { vertical-align: middle; }
-        .button.is-info {
-            background: linear-gradient(90deg, #43a047 0%, #388e3c 100%);
-            border: none;
-            color: #fff;
-            font-weight: bold;
-            transition: background 0.2s;
-        }
-        .button.is-info:hover {
-            background: linear-gradient(90deg, #388e3c 0%, #43a047 100%);
-        }
-        .button.is-danger {
-            background: linear-gradient(90deg, #d32f2f 0%, #b71c1c 100%);
-            border: none;
-            color: #fff;
-            font-weight: bold;
-            transition: background 0.2s;
-        }
-        .button.is-danger:hover {
-            background: linear-gradient(90deg, #b71c1c 0%, #d32f2f 100%);
-        }
-        .pagination {
-            justify-content: center;
-            margin-top: 1.5rem;
-        }
-        .rows-per-page {
-            margin-bottom: 1rem;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-        @media (max-width: 900px) {
-            .container { padding: 1.2rem 0.5rem 1.2rem 0.5rem; }
-            .table th, .table td { font-size: 0.95rem; }
-        }
-        @media (max-width: 600px) {
-            .container { padding: 0.5rem 0.2rem 0.5rem 0.2rem; }
-            .table th, .table td { font-size: 0.85rem; }
-            .rows-per-page { flex-direction: column; align-items: flex-start; }
         }
     </style>
 </head>
 <body>
-    <!-- Sidebar -->
+    <!-- Zona de gestos 100% INVISIBLE para los trabajadores -->
+    <div class="sidebar-swipe-handle" id="swipeHandle"></div>
+    
+    <!-- Sidebar con identidad visual 'El Faro de Algarrobo' -->
     <nav class="sidebar" id="sidebar">
-        <a href="{% url 'lector_precios' %}" class="sidebar-link{% if request.resolver_match.url_name == 'lector_precios' %} active{% endif %}">Lector de Barras</a>
-        <a href="{% url 'agregar_producto' %}" class="sidebar-link{% if request.resolver_match.url_name == 'agregar_producto' %} active{% endif %}">Agregar Producto</a>
-        <a href="{% url 'mantenedor_promociones' %}" class="sidebar-link{% if request.resolver_match.url_name == 'mantenedor_promociones' %} active{% endif %}">Mantenedor de Imágenes de Promociones</a>
-        <a href="{% url 'import_export_precios' %}" class="sidebar-link{% if request.resolver_match.url_name == 'import_export_precios' %} active{% endif %}">Importar / Exportar Lista de Precios</a>
-    </nav>
-    <div class="contenido-principal" id="contenidoPrincipal">
-        <!-- Barra de navegación -->
-        <nav class="navbar is-light" role="navigation" aria-label="main navigation" id="mainNavbar">
-            <div class="navbar-brand">
-                <!-- Botón para mostrar/ocultar sidebar dentro de la navbar -->
-                <button class="sidebar-toggle-btn" id="sidebarToggle" title="Menú" type="button">
-                    <span id="sidebarIcon">&#9776;</span>
-                </button>
+        <button class="sidebar-close-btn" id="sidebarCloseBtn" title="Cerrar menú">&times;</button>
+        
+        <div class="sidebar-header">
+            <svg class="lighthouse-svg-logo" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M 40 24 C 40 16, 56 16, 56 24 Z" fill="#ffffff" />
+                <path d="M 38 24 L 58 24 L 58 28 L 38 28 Z" fill="#ffffff" />
+                <line x1="60" y1="20" x2="80" y2="12" stroke="#ffffff" stroke-width="4" stroke-linecap="round" />
+                <line x1="62" y1="26" x2="86" y2="26" stroke="#ffffff" stroke-width="4" stroke-linecap="round" />
+                <line x1="60" y1="32" x2="80" y2="40" stroke="#ffffff" stroke-width="4" stroke-linecap="round" />
+                <path d="M 40 28 L 56 28 L 64 84 L 32 84 Z" fill="#ffffff" />
+                <path d="M 41 38 L 57 32 L 60 48 L 37 54 Z" fill="#222d32" />
+                <path d="M 37 62 L 61 56 L 63 72 L 34 78 Z" fill="#222d32" />
+                <path d="M 28 84 L 68 84 L 68 90 L 28 90 Z" fill="#ffffff" />
+            </svg>
+            <div class="sidebar-brand-title">
+                <span>EL FARO</span>
+                <small>DE ALGARROBO</small>
             </div>
-            <div class="navbar-menu is-active" style="width:100%;">
-                <div class="navbar-start">
-                    <a class="navbar-item" href="{% url 'agregar_producto' %}">Agregar Producto</a>
-                    <a class="navbar-item" href="{% url 'lista_productos' %}">Lista de productos</a>
+        </div>
+
+        <a href="{% url 'lector_precios' %}" class="sidebar-link{% if request.resolver_match.url_name == 'lector_precios' %} active{% endif %}">
+            <svg class="sidebar-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2"/>
+                <line x1="7" y1="12" x2="17" y2="12" stroke="#43a047" stroke-width="2"/>
+                <line x1="8" y1="8" x2="8" y2="16"/>
+                <line x1="12" y1="8" x2="12" y2="16"/>
+                <line x1="16" y1="8" x2="16" y2="16"/>
+            </svg>
+            <span>Lector de Barras</span>
+        </a>
+        <a href="{% url 'agregar_producto' %}" class="sidebar-link{% if request.resolver_match.url_name == 'agregar_producto' %} active{% endif %}">
+            <svg class="sidebar-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+                <polyline points="3.27 6.96 12 12.01 20.73 6.96"/>
+                <line x1="12" y1="22.08" x2="12" y2="12"/>
+                <line x1="12" y1="8" x2="12" y2="16" stroke="#43a047" stroke-width="2"/>
+                <line x1="8" y1="12" x2="16" y2="12" stroke="#43a047" stroke-width="2"/>
+            </svg>
+            <span>Agregar Producto</span>
+        </a>
+        <a href="{% url 'mantenedor_promociones' %}" class="sidebar-link{% if request.resolver_match.url_name == 'mantenedor_promociones' %} active{% endif %}">
+            <svg class="sidebar-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/>
+                <line x1="7" y1="7" x2="7.01" y2="7"/>
+            </svg>
+            <span>Promociones</span>
+        </a>
+        <a href="{% url 'import_export_precios' %}" class="sidebar-link{% if request.resolver_match.url_name == 'import_export_precios' %} active{% endif %}">
+            <svg class="sidebar-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                <polyline points="17 8 12 3 7 8"/>
+                <line x1="12" y1="3" x2="12" y2="15"/>
+            </svg>
+            <span>Importar / Exportar</span>
+        </a>
+    </nav>
+
+    <div class="contenido-principal" id="contenidoPrincipal">
+        <!-- Top Navbar -->
+        <header class="navbar-custom">
+            <div class="navbar-left">
+                <button class="sidebar-toggle-btn" id="sidebarToggle" title="Menú Principal (M)">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <div class="navbar-title">LISTA DE PRODUCTOS</div>
+            </div>
+            <div class="navbar-links">
+                <a href="{% url 'agregar_producto' %}" class="nav-btn">Agregar</a>
+                <a href="{% url 'lista_productos' %}" class="nav-btn active">Lista de Productos</a>
+            </div>
+        </header>
+
+        <div class="list-page-container">
+            <div class="list-header">
+                <div class="list-header-info">
+                    <h1>Lista de Productos</h1>
+                    <p>Catálogo completo de productos e inventario registrado</p>
+                </div>
+                <div class="header-actions">
+                    <a href="{% url 'agregar_producto' %}" class="btn-add-new">
+                        <i class="fas fa-plus"></i>
+                        <span>Nuevo Producto</span>
+                    </a>
                 </div>
             </div>
-        </nav>
-        <div class="container">
-            <h1 class="title has-text-centered has-text-danger">Lista de productos</h1>
-            <div class="rows-per-page">
-                <label for="rowsPerPage"><strong>Filas por página:</strong></label>
-                <div class="select">
+
+            <div class="toolbar-box">
+                <div class="search-field-custom">
+                    <i class="fas fa-search search-icon-inside"></i>
+                    <input id="buscador" type="text" placeholder="Buscar por nombre, SKU o código de barras...">
+                </div>
+                
+                <div class="rows-select-custom">
+                    <span>Filas por página:</span>
                     <select id="rowsPerPage">
-                        <option value="10">10</option>
+                        <option value="10" selected>10</option>
                         <option value="20">20</option>
-                        <option value="30">30</option>
-                        <option value="40">40</option>
                         <option value="50">50</option>
                         <option value="100">100</option>
                     </select>
                 </div>
             </div>
-            <div class="field search-box">
-                <div class="control has-icons-left">
-                    <input id="buscador" class="input" type="text" placeholder="Buscar producto por nombre, SKU o código de barras...">
-                    <span class="icon is-left"><i class="fas fa-search"></i></span>
-                </div>
+
+            <div class="table-responsive-wrapper">
+                <table class="custom-table" id="tablaProductos">
+                    <thead>
+                        <tr>
+                            <th>Nombre</th>
+                            <th>SKU</th>
+                            <th>Código de Barras</th>
+                            <th>Precio Normal</th>
+                            <th>Precio Vecino</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for producto in productos %}
+                        <tr>
+                            <td><strong>{{ producto.nombre }}</strong></td>
+                            <td><code>{{ producto.sku|default:"-" }}</code></td>
+                            <td><code>{{ producto.codigo_barras }}</code></td>
+                            <td><span class="badge-price-normal">${{ producto.precio }}</span></td>
+                            <td>
+                                {% if producto.precio_vecino %}
+                                    <span class="badge-price-vecino">${{ producto.precio_vecino }}</span>
+                                {% else %}
+                                    <span style="color:#94a3b8;">-</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="actions-btns">
+                                    <a href="{% url 'editar_producto' producto.id %}" class="btn-action-edit">Editar</a>
+                                    <a href="{% url 'eliminar_producto' producto.id %}" class="btn-action-delete" onclick="return confirm('¿Estás seguro de eliminar este producto?');">Eliminar</a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="6" style="text-align:center; padding: 2rem; color: #94a3b8;">
+                                No hay productos registrados aún.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
             </div>
-            <table class="table is-striped is-fullwidth" id="tablaProductos">
-                <thead>
-                    <tr>
-                        <th>Nombre</th>
-                        <th>SKU</th>
-                        <th>Código de Barras</th>
-                        <th>Precio</th>
-                        <th>Precio Vecino</th>
-                        <th class="actions">Acciones</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for producto in productos %}
-                    <tr>
-                        <td>{{ producto.nombre }}</td>
-                        <td>{{ producto.sku }}</td>
-                        <td>{{ producto.codigo_barras }}</td>
-                        <td>${{ producto.precio }}</td>
-                        <td>{% if producto.precio_vecino %}${{ producto.precio_vecino }}{% else %}-{% endif %}</td>
-                        <td class="actions">
-                            <a href="{% url 'editar_producto' producto.id %}" class="button is-small is-info">Editar</a>
-                            <form method="post" action="{% url 'eliminar_producto' producto.id %}" style="display:inline;">
-                                {% csrf_token %}
-                                <button type="submit" class="button is-small is-danger" onclick="return confirm('¿Seguro que deseas eliminar este producto?');">Eliminar</button>
-                            </form>
-                        </td>
-                    </tr>
-                    {% empty %}
-                    <tr>
-                        <td colspan="6" class="has-text-centered">No hay productos registrados.</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-            <nav class="pagination" role="navigation" aria-label="pagination" id="paginacion"></nav>
+
+            <div class="pagination-container" id="paginacion"></div>
         </div>
     </div>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
-    <script>
-        // Sidebar toggle
-        const sidebar = document.getElementById('sidebar');
-        const sidebarToggle = document.getElementById('sidebarToggle');
-        const sidebarIcon = document.getElementById('sidebarIcon');
-        const contenidoPrincipal = document.getElementById('contenidoPrincipal');
-        let sidebarOpen = false;
 
-        function toggleSidebar() {
-            sidebarOpen = !sidebarOpen;
-            sidebar.classList.toggle('open', sidebarOpen);
-            contenidoPrincipal.classList.toggle('shifted', sidebarOpen);
-            sidebarIcon.innerHTML = sidebarOpen ? '&times;' : '&#9776;';
+    <script>
+        // --- SISTEMA DE NAVEGACIÓN Y GESTOS DE SIDEBAR UNIFICADO ---
+        const sidebar = document.getElementById('sidebar');
+        const contenidoPrincipal = document.getElementById('contenidoPrincipal');
+        const swipeHandle = document.getElementById('swipeHandle');
+        const sidebarCloseBtn = document.getElementById('sidebarCloseBtn');
+        const sidebarToggle = document.getElementById('sidebarToggle');
+        
+        let sidebarOpen = false;
+        let isDragging = false;
+        let startX = 0;
+        let startY = 0;
+        let currentX = 0;
+        let currentY = 0;
+        let isHorizontalDrag = false;
+        let justDragged = false;
+        let dragResetTimer = null;
+
+        function getSidebarWidth() {
+            return sidebar ? sidebar.offsetWidth || 250 : 250;
         }
 
-        sidebarToggle.addEventListener('click', function(e) {
-            e.stopPropagation();
-            toggleSidebar();
+        document.addEventListener('dragstart', function(e) {
+            e.preventDefault();
+        }, false);
+
+        function openSidebar() {
+            if (!sidebar) return;
+            sidebarOpen = true;
+            sidebar.style.transition = 'transform 0.35s cubic-bezier(0.16, 1, 0.3, 1)';
+            sidebar.style.transform = 'translateX(0)';
+            sidebar.classList.add('open');
+            if (contenidoPrincipal) contenidoPrincipal.classList.add('shifted');
+        }
+
+        function closeSidebar() {
+            if (!sidebar) return;
+            sidebarOpen = false;
+            sidebar.style.transition = 'transform 0.35s cubic-bezier(0.16, 1, 0.3, 1)';
+            sidebar.style.transform = 'translateX(-' + getSidebarWidth() + 'px)';
+            sidebar.classList.remove('open');
+            if (contenidoPrincipal) contenidoPrincipal.classList.remove('shifted');
+        }
+
+        function toggleSidebar() {
+            if (sidebarOpen) closeSidebar();
+            else openSidebar();
+        }
+
+        if (sidebarToggle) {
+            sidebarToggle.addEventListener('click', function(e) {
+                e.stopPropagation();
+                toggleSidebar();
+            });
+        }
+
+        if (sidebarCloseBtn) {
+            sidebarCloseBtn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                closeSidebar();
+            });
+        }
+
+        function handleDragStart(x, y) {
+            if (x < 40 || sidebarOpen) {
+                isDragging = true;
+                startX = x;
+                startY = y;
+                currentX = x;
+                currentY = y;
+                isHorizontalDrag = false;
+                if (sidebar) sidebar.style.transition = 'none';
+            }
+        }
+
+        function handleDragMove(x, y) {
+            if (!isDragging) return;
+            currentX = x;
+            currentY = y;
+            const deltaX = currentX - startX;
+            const deltaY = currentY - startY;
+
+            if (!isHorizontalDrag) {
+                if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > 8) {
+                    isHorizontalDrag = true;
+                } else if (Math.abs(deltaY) > 12) {
+                    isDragging = false;
+                    return;
+                }
+            }
+
+            if (isHorizontalDrag) {
+                const width = getSidebarWidth();
+                let newX;
+                if (sidebarOpen) {
+                    newX = Math.min(0, Math.max(-width, deltaX));
+                } else {
+                    newX = Math.min(0, Math.max(-width, -width + deltaX));
+                }
+                if (sidebar) sidebar.style.transform = 'translateX(' + newX + 'px)';
+            }
+        }
+
+        function handleDragEnd() {
+            if (!isDragging) return;
+            isDragging = false;
+
+            if (isHorizontalDrag) {
+                justDragged = true;
+                clearTimeout(dragResetTimer);
+                dragResetTimer = setTimeout(() => { justDragged = false; }, 350);
+
+                const deltaX = currentX - startX;
+
+                if (sidebarOpen) {
+                    if (deltaX < -50) closeSidebar();
+                    else openSidebar();
+                } else {
+                    if (deltaX > 35) openSidebar();
+                    else closeSidebar();
+                }
+            }
+            isHorizontalDrag = false;
+        }
+
+        // Listeners táctiles
+        document.addEventListener('touchstart', function(e) {
+            if (e.touches.length === 1) handleDragStart(e.touches[0].clientX, e.touches[0].clientY);
+        }, { passive: true });
+
+        document.addEventListener('touchmove', function(e) {
+            if (e.touches.length === 1) handleDragMove(e.touches[0].clientX, e.touches[0].clientY);
+        }, { passive: true });
+
+        document.addEventListener('touchend', function(e) { handleDragEnd(); }, { passive: true });
+
+        // Listeners de ratón para PC
+        document.addEventListener('mousedown', function(e) {
+            if (e.button === 0) handleDragStart(e.clientX, e.clientY);
         });
 
-        // Cerrar sidebar al hacer click fuera en móviles
+        document.addEventListener('mousemove', function(e) {
+            if (isDragging) handleDragMove(e.clientX, e.clientY);
+        });
+
+        document.addEventListener('mouseup', function(e) {
+            if (isDragging) handleDragEnd();
+        });
+
+        if (swipeHandle) {
+            swipeHandle.addEventListener('click', function(e) {
+                e.stopPropagation();
+                if (!sidebarOpen) openSidebar();
+            });
+        }
+
         document.addEventListener('click', function(e) {
-            if (sidebarOpen && !sidebar.contains(e.target) && !sidebarToggle.contains(e.target)) {
+            if (justDragged) return;
+            if (sidebarOpen && sidebar && !sidebar.contains(e.target) && (!swipeHandle || !swipeHandle.contains(e.target)) && (!sidebarToggle || !sidebarToggle.contains(e.target))) {
+                closeSidebar();
+            }
+        });
+
+        // Atajo de teclado 'm' o 'M' para abrir/cerrar sidebar en PC
+        document.addEventListener('keydown', function(e) {
+            if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+            if (e.key === 'm' || e.key === 'M') {
                 toggleSidebar();
             }
         });
 
-        // --- Paginación y filtrado en el frontend ---
+        // --- FILTRADO Y PAGINACIÓN ---
         document.addEventListener('DOMContentLoaded', function() {
             const buscador = document.getElementById('buscador');
             const tabla = document.getElementById('tablaProductos').getElementsByTagName('tbody')[0];
@@ -276,16 +829,11 @@
             let currentPage = 1;
 
             function getFilteredRows() {
-                const filtro = buscador.value.toLowerCase();
-                // SIEMPRE considerar todas las filas, no solo las visibles
+                const filtro = buscador.value.toLowerCase().trim();
                 return Array.from(tabla.rows).filter(row => {
                     const texto = Array.from(row.cells).slice(0, 3).map(td => td.textContent.toLowerCase()).join(' ');
                     return texto.includes(filtro);
                 });
-            }
-
-            function updateTable() {
-                paginate();
             }
 
             function paginate() {
@@ -294,9 +842,7 @@
                 const totalPages = Math.ceil(totalRows / rowsPerPage) || 1;
                 if (currentPage > totalPages) currentPage = totalPages;
 
-                // Oculta todas las filas primero
                 Array.from(tabla.rows).forEach(row => row.style.display = 'none');
-                // Muestra solo las filas de la página actual
                 filteredRows.forEach((row, idx) => {
                     if (idx >= (currentPage - 1) * rowsPerPage && idx < currentPage * rowsPerPage) {
                         row.style.display = '';
@@ -310,63 +856,23 @@
                 paginacion.innerHTML = '';
                 if (totalPages <= 1) return;
 
-                const ul = document.createElement('ul');
-                ul.className = 'pagination-list';
-
-                // Prev button
-                const prev = document.createElement('a');
-                prev.className = 'pagination-previous';
-                prev.textContent = 'Anterior';
-                prev.disabled = currentPage === 1;
-                prev.onclick = function() {
-                    if (currentPage > 1) {
-                        currentPage--;
-                        paginate();
-                    }
-                };
-                paginacion.appendChild(prev);
-
-                // Next button
-                const next = document.createElement('a');
-                next.className = 'pagination-next';
-                next.textContent = 'Siguiente';
-                next.disabled = currentPage === totalPages;
-                next.onclick = function() {
-                    if (currentPage < totalPages) {
-                        currentPage++;
-                        paginate();
-                    }
-                };
-                paginacion.appendChild(next);
-
-                // Page numbers
                 for (let i = 1; i <= totalPages; i++) {
                     if (i === 1 || i === totalPages || Math.abs(i - currentPage) <= 2) {
-                        const li = document.createElement('li');
                         const a = document.createElement('a');
-                        a.className = 'pagination-link' + (i === currentPage ? ' is-current' : '');
+                        a.className = 'pagination-link-custom' + (i === currentPage ? ' active' : '');
                         a.textContent = i;
                         a.onclick = function() {
                             currentPage = i;
                             paginate();
                         };
-                        li.appendChild(a);
-                        ul.appendChild(li);
-                    } else if (
-                        (i === currentPage - 3 && i > 1) ||
-                        (i === currentPage + 3 && i < totalPages)
-                    ) {
-                        const li = document.createElement('li');
-                        li.innerHTML = '<span class="pagination-ellipsis">&hellip;</span>';
-                        ul.appendChild(li);
+                        paginacion.appendChild(a);
                     }
                 }
-                paginacion.appendChild(ul);
             }
 
             buscador.addEventListener('input', function() {
                 currentPage = 1;
-                updateTable();
+                paginate();
             });
 
             rowsPerPageSelect.addEventListener('change', function() {
@@ -375,8 +881,7 @@
                 paginate();
             });
 
-            // Inicializar
-            updateTable();
+            paginate();
         });
     </script>
 </body>
