@@ -135,12 +135,12 @@ def main():
 
     csv_path = os.path.join(os.path.dirname(__file__), CSV_FILENAME)
     if not os.path.exists(csv_path):
-        print(f"❌ No se encontró el archivo CSV en: {csv_path}")
+        print(f"[X] No se encontro el archivo CSV en: {csv_path}")
         return
 
     print("==========================================================")
-    print("🚀 INICIANDO DESCARGADOR AUTOMÁTICO DE IMÁGENES STOCK")
-    print(f"📂 Carpeta destino: {OUTPUT_DIR}")
+    print("INICIANDO DESCARGADOR AUTOMATICO DE IMAGENES STOCK")
+    print(f"Carpeta destino: {OUTPUT_DIR}")
     print("==========================================================")
 
     productos = []
@@ -160,7 +160,7 @@ def main():
                     productos.append({'codigo': cod, 'nombre': nombre})
 
     total = len(productos)
-    print(f"📊 Total de productos cargados desde el CSV: {total}\n")
+    print(f"Total de productos cargados desde el CSV: {total}\n")
 
     exitosos = 0
     ya_existian = 0
@@ -174,31 +174,31 @@ def main():
 
         if os.path.exists(filepath) and os.path.getsize(filepath) > 1000:
             ya_existian += 1
-            print(f"[{idx}/{total}] ⏩ {cod}.jpg ya existe. Omitiendo...")
+            print(f"[{idx}/{total}] SKIP {cod}.jpg ya existe.")
             continue
 
-        print(f"[{idx}/{total}] 🔍 Buscando foto de estudio para: '{nombre}' ({cod})...")
+        print(f"[{idx}/{total}] Buscando foto de estudio para: '{nombre}' ({cod})...")
         url_img, fuente = buscar_url_imagen_retail(cod, nombre)
 
         if url_img:
             if descargar_imagen(url_img, filepath):
                 exitosos += 1
-                print(f"   ✅ ¡Descargada exitosamente ({fuente})! -> {filename}")
+                print(f"   [OK] Descargada ({fuente}) -> {filename}")
             else:
                 fallidos += 1
-                print(f"   ❌ Falló la descarga de URL: {url_img}")
+                print(f"   [FAIL] Fallo la descarga de URL: {url_img}")
         else:
             fallidos += 1
-            print(f"   ⚠️ Sin foto de estudio encontrada para {cod}")
+            print(f"   [WARN] Sin foto de estudio para {cod}")
 
         time.sleep(0.15)
 
     print("\n==========================================================")
-    print("🎉 DESCARGA FINALIZADA")
-    print(f"✅ Descargadas nuevas: {exitosos}")
-    print(f"⏩ Ya existían: {ya_existian}")
-    print(f"⚠️ Sin imagen encontrada: {fallidos}")
-    print(f"📂 Carpeta de imágenes listas: {OUTPUT_DIR}")
+    print("DESCARGA FINALIZADA")
+    print(f"Descargadas nuevas: {exitosos}")
+    print(f"Ya existian: {ya_existian}")
+    print(f"Sin imagen encontrada: {fallidos}")
+    print(f"Carpeta de imagenes listas: {OUTPUT_DIR}")
     print("==========================================================")
 
 if __name__ == '__main__':
