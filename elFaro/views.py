@@ -562,7 +562,11 @@ def _parsear_lista_bsale(archivo, nombre_lista):
                 continue
 
     if not productos:
-        raise ValueError(f'No fue posible leer las listas de Bsale: Verifique que el archivo "{nombre_lista}" exportado de Bsale contenga las columnas de Código de Barras / SKU y Precio Venta.')
+        tamanio_kb = len(contenido) // 1024
+        if tamanio_kb < 50:
+            raise ValueError(f'El archivo "{nombre_lista}" seleccionado pesa solo {tamanio_kb} KB y está incompleto o corrupto. Por favor selecciona el archivo de lista completa (que pesa aprox. 1.2 MB / 1.200 KB).')
+        else:
+            raise ValueError(f'No fue posible leer las listas de Bsale: Verifique que el archivo "{nombre_lista}" exportado de Bsale contenga las columnas de Código de Barras / SKU y Precio Venta.')
 
     return productos, errores
 
