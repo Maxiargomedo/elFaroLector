@@ -441,14 +441,15 @@ def _parsear_lista_bsale(archivo, nombre_lista):
             for idx_celda, celda_txt in enumerate(celdas):
                 if any(k in celda_txt for k in ['código barras', 'codigo barras', 'código de barras', 'codigo de barras', 'cód. barras', 'cod. barras', 'barcode']):
                     temp_codigo = idx_celda
-                elif 'sku' in celda_txt:
+                elif celda_txt == 'sku' or 'código sku' in celda_txt or 'codigo sku' in celda_txt or celda_txt.startswith('sku '):
                     temp_sku = idx_celda
-                elif any(k in celda_txt for k in ['variante', 'nombre', 'descripcion', 'descripción', 'producto']):
+                elif any(k in celda_txt for k in ['variante', 'descripción', 'descripcion', 'nombre producto', 'producto / variante']):
                     temp_nombre = idx_celda
-                elif any(k in celda_txt for k in ['precio venta', 'precio', 'p.venta', 'valor']):
+                elif any(k in celda_txt for k in ['precio venta', 'precio neto', 'precio bruto', 'precio lista', 'precio', 'p.venta', 'valor']):
                     temp_precio = idx_celda
 
-            if (temp_codigo != -1 or temp_nombre != -1 or temp_sku != -1) and temp_precio != -1:
+            # Exigir estrictamente código de barras o SKU Y precio para ser la tabla de productos real (evita falsos positivos con la tabla 0 de metadatos)
+            if (temp_codigo != -1 or temp_sku != -1) and temp_precio != -1:
                 tabla_datos = tabla
                 col_codigo = temp_codigo if temp_codigo != -1 else (0 if temp_sku != 1 else 1)
                 col_sku = temp_sku
@@ -516,16 +517,16 @@ def _parsear_lista_bsale(archivo, nombre_lista):
                 for f_idx, fila in enumerate(filas_csv[:15]):
                     c_low = [str(c).strip().lower() for c in fila]
                     for c_i, c_t in enumerate(c_low):
-                        if any(k in c_t for k in ['codigo barras', 'código barras', 'codigo', 'código', 'barcode']):
+                        if any(k in c_t for k in ['codigo barras', 'código barras', 'codigo de barras', 'código de barras', 'cód. barras', 'cod. barras', 'barcode']):
                             col_c = c_i
-                        elif 'sku' in c_t:
+                        elif c_t == 'sku' or 'código sku' in c_t or 'codigo sku' in c_t:
                             col_s = c_i
-                        elif any(k in c_t for k in ['variante', 'nombre', 'producto', 'descripcion']):
+                        elif any(k in c_t for k in ['variante', 'descripción', 'descripcion', 'nombre producto']):
                             col_n = c_i
-                        elif any(k in c_t for k in ['precio', 'p.venta', 'valor']):
+                        elif any(k in c_t for k in ['precio venta', 'precio', 'valor', 'p.venta']):
                             col_p = c_i
 
-                    if (col_c != -1 or col_n != -1) and col_p != -1:
+                    if (col_c != -1 or col_s != -1) and col_p != -1:
                         hdr_idx = f_idx
                         break
 
