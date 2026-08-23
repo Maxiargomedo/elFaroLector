@@ -177,11 +177,8 @@ def buscar_producto(request):
                 imagen_url = settings.MEDIA_URL + local_rel_path
                 print(f"📁 Usando foto alojada en servidor local: {imagen_url}")
             else:
-                # 2. Buscar URL promocional en tiempo real desde la web (SIN guardar ningún archivo en disco)
-                try:
-                    imagen_url = obtener_imagen_promocional_realtime(producto.nombre, producto.codigo_barras)
-                except Exception as e_img:
-                    print(f"Error buscando imagen tiempo real: {e_img}")
+                # Búsqueda en tiempo real desactivada por seguridad del contenido expuesto al público
+                imagen_url = None
 
             return JsonResponse({
                 'nombre': producto.nombre,
