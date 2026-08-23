@@ -17,4 +17,4 @@ COPY . /app/
 
 EXPOSE 8000
 
-CMD ["sh", "-c", "python manage.py migrate --noinput && python manage.py collectstatic --noinput && gunicorn mi_proyecto.wsgi:application --bind 0.0.0.0:${PORT:-8000}"]
+CMD ["sh", "-c", "mkdir -p /app/media/productos && cp -rn /app/imagenes_productos/. /app/media/productos/ 2>/dev/null || true && python manage.py migrate --noinput && python manage.py collectstatic --noinput && gunicorn mi_proyecto.wsgi:application --bind 0.0.0.0:${PORT:-8000}"]
